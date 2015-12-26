@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class MainActivity extends ListActivity {
     public final static String UUID = "37e562ac-d31a-46f8-b654-2fe4285e7041";
     public final static String AppName = "Blgame";
     private final static String IS_SERVER = "isServer";
+    private ViewFlipper viewFlipper;
     private static String MAC;
     private BluetoothAdapter mBluetoothAdapter;
     private final List<BluetoothDevice> discoveredDevices = new ArrayList<BluetoothDevice>();
@@ -93,6 +95,7 @@ public class MainActivity extends ListActivity {
         Log.d("MainActivity MAC", MAC);
         textData = (TextView) findViewById(R.id.data_text);
         textData.setText("Получено: ");
+        viewFlipper = (ViewFlipper) findViewById(R.id.flipper);
         textMessage = (EditText) findViewById(R.id.message_text);
         listAdapter = new ArrayAdapter<BluetoothDevice>(getBaseContext(), android.R.layout.simple_list_item_1, discoveredDevices) {
             @Override
@@ -122,7 +125,7 @@ public class MainActivity extends ListActivity {
         intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
         startActivity(intent);
         TextView buttonText = (TextView) findViewById(R.id.BTstatus);
-        buttonText.setText("Игра создана");
+        buttonText.setText("Bluetooth включен");
         Toast.makeText(this, mBluetoothAdapter.getName(), Toast.LENGTH_LONG).show();
     }
 
@@ -210,11 +213,12 @@ public class MainActivity extends ListActivity {
         BluetoothDevice deviceSelected = discoveredDevices.get(position);
         client = new Client(deviceSelected, communicatorService);
         client.start();
+        //передаём второму устройству наш MAC адрес для подключения
         new WriteTask().execute(MAC);
         Toast.makeText(this, "Вы подключились к устройству \"" + discoveredDevices.get(position).getName() + "\"", Toast.LENGTH_SHORT).show();
-        //Intent intent = new Intent(this, GameActivity.class);
-        //intent.putExtra(IS_SERVER, true);
-        //startActivity(intent);
+        //показываем окно игры
+        viewFlipper.showNext();
+        //TODO: отправить сообщение о начале игры
     }
 
     public void sendMessage(View view) {
@@ -230,5 +234,13 @@ public class MainActivity extends ListActivity {
         } else {
             Toast.makeText(this, "Сначала выберите клиента", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public void stopGame(View view) {
+        //В конце игры показываем начальное окно
+        viewFlipper.showPrevious();
+        discoveredDevices.clear();
+        listAdapter.notifyDataSetChanged();
+
     }
 }

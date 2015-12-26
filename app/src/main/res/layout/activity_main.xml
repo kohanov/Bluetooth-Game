@@ -1,54 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ViewFlipper xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:id="@+id/flipper">
 
-    <Button
-        android:id="@+id/BTstatus"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:onClick="enableBluetooth"
-        android:text="@string/enableBT" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <Button
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:onClick="discoverDevices"
-        android:text="Поиск соперника" />
+        <Button
+            android:id="@+id/BTstatus"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:onClick="enableBluetooth"
+            android:text="@string/enableBT" />
 
-    <TextView
-        android:id="@+id/finded"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Выберите соперника"
-        android:visibility="invisible" />
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:onClick="discoverDevices"
+            android:text="Поиск соперника" />
 
-    <ListView
-        android:id="@id/android:list"
-        android:layout_width="fill_parent"
-        android:layout_height="120dp" />
-
-    <Button
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:onClick="sendMessage"
-        android:text="Отправить сообщение" />
-
-    <EditText
-        android:id="@+id/message_text"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
-
-    <ScrollView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
         <TextView
-            android:id="@+id/data_text"
+            android:id="@+id/finded"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Выберите соперника"
+            android:visibility="invisible" />
+
+        <ListView
+            android:id="@android:id/list"
+            android:layout_width="fill_parent"
+            android:layout_height="120dp" />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:onClick="sendMessage"
+            android:text="Отправить сообщение" />
+
+        <EditText
+            android:id="@+id/message_text"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content" />
-    </ScrollView>
 
-</LinearLayout>
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/data_text"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" />
+        </ScrollView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/gametext"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Here is game window"
+            android:textSize="18dp" />
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:onClick="stopGame"
+            android:text="Return to main" />
+    </LinearLayout>
+</ViewFlipper>
