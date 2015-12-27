@@ -39,6 +39,15 @@
             android:layout_height="120dp" />
 
         <Button
+            android:id="@+id/gotoGame"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:visibility="invisible"
+            android:clickable="false"
+            android:onClick="gotoGame"
+            android:text="В игру" />
+
+        <Button
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:onClick="sendMessage"
@@ -66,10 +75,15 @@
         android:gravity="center"
         android:padding="20dp"
         android:orientation="vertical">
+        <Button
+            android:id="@+id/status"
+            android:onClick="setReady"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
 
         <Button
             android:text="Назад"
-            android:onClick="stopGame"
+            android:onClick="pauseGame"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content" />
 

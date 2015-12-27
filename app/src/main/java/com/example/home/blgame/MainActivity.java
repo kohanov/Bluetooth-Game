@@ -38,6 +38,7 @@ public class MainActivity extends ListActivity {
     private final static String IS_SERVER = "isServer";
     private ViewFlipper viewFlipper;
     private boolean isStarted = false;
+    private boolean isFirst = true;
     private BluetoothAdapter mBluetoothAdapter;
     private final List<BluetoothDevice> discoveredDevices = new ArrayList<BluetoothDevice>();
     private ArrayAdapter<BluetoothDevice> listAdapter;
@@ -96,7 +97,23 @@ public class MainActivity extends ListActivity {
                             } else//TODO: обрабатывать входящее сообщение здесь
                                 switch (message.charAt(0)) {
                                     case 'a'://противник готов
-
+                                        if (message.charAt(1) == 's') {
+                                            status = Status.MY_TURN;
+                                        } else {
+                                            //TODO:смена цветов у всех!!!!!
+                                            MY_COLOR = Figure.Team.BLUE;
+                                            OPPONENT_COLOR = Figure.Team.RED;
+                                            for (int column = 0; column < desk.countFiguresInRow; column++) {
+                                                for (int row = 0; row < desk.countFiguresInRow; row++) {
+                                                    if (row < 2) {
+                                                        desk.figures[column][row].setTeam(OPPONENT_COLOR);
+                                                    } else if (row >= desk.countFiguresInRow - 2) {
+                                                        desk.figures[column][row].setTeam(MY_COLOR);
+                                                    }
+                                                }
+                                            }
+                                            isFirst = false;
+                                        }
                                         break;
                                     case 'b'://передаём начальные значения
                                         int i = 1;
@@ -151,7 +168,7 @@ public class MainActivity extends ListActivity {
 
         MY_COLOR = Figure.Team.RED;
         OPPONENT_COLOR = Figure.Team.BLUE;
-        status = Status.MY_TURN;
+        status = Status.BEFORE_START;
 
         setContentView(R.layout.activity_main);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -300,7 +317,9 @@ public class MainActivity extends ListActivity {
         //показываем окно игры
         viewFlipper.showNext();
         //((Button) findViewById(R.id.search)).setText("Назад в игру");
-        //isStarted = true;
+        findViewById(R.id.gotoGame).setVisibility(View.VISIBLE);
+        findViewById(R.id.gotoGame).setClickable(true);
+        isStarted = true;
         //TODO: отправить сообщение о начале игры
     }
 
@@ -314,12 +333,26 @@ public class MainActivity extends ListActivity {
         }
     }
 
-    public void stopGame(View view) {
+    public void pauseGame(View view) {
         //В конце игры показываем начальное окно
         viewFlipper.showPrevious();
         discoveredDevices.clear();
         listAdapter.notifyDataSetChanged();
 
+    }
+
+    public void gotoGame(View view) {
+        viewFlipper.showNext();
+    }
+
+    public void setReady(View view) {
+        ((Button) findViewById(R.id.status)).setClickable(false);
+        if (isFirst)
+            new WriteTask().execute("ap");
+        else {
+            new WriteTask().execute("as");
+            status = Status.OPPONENT_TURN;
+        }
     }
 
     public static void sendPrepared(String message) {
