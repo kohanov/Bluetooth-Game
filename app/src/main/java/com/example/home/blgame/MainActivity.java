@@ -70,10 +70,11 @@ public class MainActivity extends ListActivity {
                 client.getCommunicator().write(args[0]);
                 Log.d(tag, args[0]);
             } catch (Exception e) {
-                Log.d(tag, "Error: "+ e.getClass().getSimpleName() + " " + e.getLocalizedMessage());
+                Log.d(tag, "Error: " + e.getClass().getSimpleName() + " " + e.getLocalizedMessage());
             }
             return null;
         }
+
         private final String tag = "WriteTask";
     }
 
@@ -105,7 +106,7 @@ public class MainActivity extends ListActivity {
                                         if (message.charAt(1) == 's') {
                                             status = Status.MY_TURN;
                                         } else {
-                                            //TODO:смена цветов у всех!!!!!
+                                            //смена цветов у всех!!!!!
                                             MY_COLOR = Figure.Team.BLUE;
                                             OPPONENT_COLOR = Figure.Team.RED;
                                             for (int column = 0; column < desk.countFiguresInRow; column++) {
@@ -122,40 +123,63 @@ public class MainActivity extends ListActivity {
                                         break;
                                     case 'b'://передаём начальные значения
                                         int i = 1;
-                                        for (int column = 0; column < desk.countFiguresInRow; column++) {
-                                            for (int row = desk.countFiguresInRow - 2; row < desk.countFiguresInRow; row++) {
-                                                int columnchanged = desk.countFiguresInRow - column - 1;
-                                                int rowchanged = desk.countFiguresInRow - row - 1;
+                                        for (int column = desk.countFiguresInRow - 1; column >= 0; --column) {
+                                            for (int row = 1; row >= 0; --row) {
+//                                                int columnchanged = desk.countFiguresInRow - column - 1;
+//                                                int rowchanged = desk.countFiguresInRow - row - 1;
                                                 switch (message.charAt(i)) {
-                                                    case 1:
-                                                        desk.figures[columnchanged][rowchanged].setFigureImage(Figure.FigureImage.ROCK);
-                                                        i++;
+                                                    case '1':
+                                                        Log.d(TAG, message.charAt(i)+ "ROCK");
+                                                        desk.figures[column][row].setFigureImage(Figure.FigureImage.ROCK);
                                                         break;
-                                                    case 2:
-                                                        desk.figures[columnchanged][rowchanged].setFigureImage(Figure.FigureImage.SCISSORS);
-                                                        i++;
+                                                    case '2':
+                                                        Log.d(TAG, message.charAt(i)+ "CUT");
+                                                        desk.figures[column][row].setFigureImage(Figure.FigureImage.SCISSORS);
                                                         break;
-                                                    case 3:
-                                                        desk.figures[columnchanged][rowchanged].setFigureImage(Figure.FigureImage.PAPER);
-                                                        i++;
+                                                    case '3':
+                                                        Log.d(TAG, message.charAt(i)+ "PAPER");
+                                                        desk.figures[column][row].setFigureImage(Figure.FigureImage.PAPER);
                                                         break;
                                                 }
+                                                ++i;
                                             }
                                         }
+//                                        int i = 1;
+//                                        for (int column = 0; column < desk.countFiguresInRow; column++) {
+//                                            for (int row = desk.countFiguresInRow - 2; row < desk.countFiguresInRow; row++) {
+//                                                int columnchanged = desk.countFiguresInRow - column - 1;
+//                                                int rowchanged = desk.countFiguresInRow - row - 1;
+//                                                switch (message.charAt(i)) {
+//                                                    case 1:
+//                                                        desk.figures[columnchanged][rowchanged].setFigureImage(Figure.FigureImage.ROCK);
+//                                                        i++;
+//                                                        break;
+//                                                    case 2:
+//                                                        desk.figures[columnchanged][rowchanged].setFigureImage(Figure.FigureImage.SCISSORS);
+//                                                        i++;
+//                                                        break;
+//                                                    case 3:
+//                                                        desk.figures[columnchanged][rowchanged].setFigureImage(Figure.FigureImage.PAPER);
+//                                                        i++;
+//                                                        break;
+//                                                }
+//                                            }
+//                                        }
                                         break;
                                     case 'c'://сделан шаг
                                         int oldColumn = (int) message.charAt(1) - (int) '0';
                                         int oldRow = (int) message.charAt(2) - (int) '0';
                                         int newColumn = (int) message.charAt(3) - (int) '0';
                                         int newRow = (int) message.charAt(4) - (int) '0';
-                                        desk.redrowReceived(oldColumn,oldRow, newColumn, newRow);
+                                        desk.redrowReceived(oldColumn, oldRow, newColumn, newRow);
                                         desk.invalidate();
+                                        status = Status.MY_TURN;
                                         break;
                                     case 'd'://конец игры
 
                                         break;
                                     case 'e'://сообщение?
-                                        desk.figures[1][1] = desk.figures[1][2];
+//                                        desk.figures[1][1] = desk.figures[1][2];
                                         //desk.figures[1][1].figureBackground = Figure.FigureBackground.CHOSEN;
                                         break;
                                 }
@@ -339,7 +363,6 @@ public class MainActivity extends ListActivity {
     public void sendMessage(View view) {
         Log.d(TAG, "sendMessage");
         if (client != null) {
-            //TODO: подготовить информацию к отправке
             new WriteTask().execute(textMessage.getText().toString());
             textMessage.setText("");
         } else {

@@ -106,9 +106,9 @@ public class Desk extends View {
         for (int column = 0; column < countFiguresInRow; column++) {
             for (int row = 0; row < countFiguresInRow; row++) {
                 if (row < 2) {
-                    figures[column][row] = new Figure(FigureBackground.NO_ACTIVITY, FigureImage.ROCK, false, OPPONENT_COLOR);//OPPONENT
+                    figures[column][row] = new Figure(FigureBackground.NO_ACTIVITY, FigureImage.ROCK, true, OPPONENT_COLOR);//TODO hide OPPONENT
                 } else if (row >= countFiguresInRow - 2) {
-                    figures[column][row] = new Figure(FigureBackground.NO_ACTIVITY, FigureImage.ROCK, false, MY_COLOR);//MY
+                    figures[column][row] = new Figure(FigureBackground.NO_ACTIVITY, FigureImage.ROCK, true, MY_COLOR);//TODO hide  MY
                 } else {
                     figures[column][row] = EMPTY_FIELD;
                 }
@@ -261,6 +261,9 @@ public class Desk extends View {
                             }
                         }
 
+                        Log.d(TAG,"vals: suc: " + successed + " chang: " + changeMyFigure);
+
+
                         if (!changeMyFigure) {
                             if (successed) {
                                 // send msg
@@ -274,8 +277,11 @@ public class Desk extends View {
 
                                 status = Status.OPPONENT_TURN;
                             } else {
+                                Log.d(TAG,"failSend");
                                 tryChangeFigure(column, row);
                             }
+                        }else {
+                            Log.d(TAG,"notChange "+ changeMyFigure);
                         }
 
                         invalidate();
@@ -336,6 +342,7 @@ public class Desk extends View {
 
             highlight(chosenColumn, chosenRow, false);
             drowShiftFigure(chosenColumn, chosenRow, column, row);
+            return true;
         }
         return false; // unreachable statement
     }
@@ -344,12 +351,10 @@ public class Desk extends View {
         if (figures[toColumn][toRow].getTeam() == Team.EMPTY) {
             figures[toColumn][toRow] = figures[fromColumn][fromRow];
             figures[fromColumn][fromRow] = EMPTY_FIELD;
-            status = Status.MY_TURN;
         } else {
             drowShiftFigure(fromColumn, fromRow, toColumn, toRow);
         }
-
-        status = Status.MY_TURN;
+        //status = Status.MY_TURN;
     }
 
     private boolean drowShiftFigure(int fromColumn, int fromRow, int toColumn, int toRow) {
@@ -403,8 +408,8 @@ public class Desk extends View {
 
         figures[fromColumn][fromRow].setFigureBackground(FigureBackground.NO_ACTIVITY);
         figures[fromColumn][fromRow].setVisible(true);
-        figures[toColumn][toRow] = figures[chosenColumn][chosenRow];
-        figures[toColumn][toRow] = EMPTY_FIELD;
+        figures[toColumn][toRow] = figures[fromColumn][fromRow];
+        figures[fromColumn][fromRow] = EMPTY_FIELD;
 
         chosenColumn = toColumn;
         chosenRow = toRow;
