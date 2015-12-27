@@ -63,6 +63,7 @@ public class Desk extends View {
 
     public Figure[][] figures;
 
+
     enum Fight {WIN, LOSE, DRAW, BEFORE_FIGHT}
 
     Fight resultOfFight;
@@ -263,12 +264,12 @@ public class Desk extends View {
                         if (!changeMyFigure) {
                             if (successed) {
                                 // send msg
-                                    StringBuilder message = new StringBuilder("c");
-                                    message.append(((Integer) (countFiguresInRow - oldColumn - 1)).toString());
-                                    message.append(((Integer) (countFiguresInRow - oldRow - 1)).toString());
-                                    message.append(((Integer) (countFiguresInRow - chosenColumn - 1)).toString());
-                                    message.append(((Integer) (countFiguresInRow - chosenRow - 1)).toString());
-                                    MainActivity.sendPrepared("message");
+                                StringBuilder message = new StringBuilder("c");
+                                message.append(((Integer) (countFiguresInRow - oldColumn - 1)).toString());
+                                message.append(((Integer) (countFiguresInRow - oldRow - 1)).toString());
+                                message.append(((Integer) (countFiguresInRow - chosenColumn - 1)).toString());
+                                message.append(((Integer) (countFiguresInRow - chosenRow - 1)).toString());
+                                MainActivity.sendPrepared("message");
 
                                 status = Status.OPPONENT_TURN;
                             } else {
@@ -331,74 +332,90 @@ public class Desk extends View {
             status = Status.OPPONENT_TURN;
 
             highlight(chosenColumn, chosenRow, false);
-
-            switch (figures[chosenColumn][chosenRow].getFigureImage()) {
-                case ROCK:
-                    switch (figures[column][row].getFigureImage()) {
-                        case ROCK:
-                            return drowDraw(column, row);
-                        case SCISSORS:
-                            return drowWin(column, row);
-                        case PAPER:
-                            return drowLose(column, row);
-                    }
-                case SCISSORS:
-                    switch (figures[column][row].getFigureImage()) {
-                        case ROCK:
-                            return drowLose(column, row);
-                        case SCISSORS:
-                            return drowDraw(column, row);
-                        case PAPER:
-                            return drowWin(column, row);
-                    }
-                case PAPER:
-                    switch (figures[column][row].getFigureImage()) {
-                        case ROCK:
-                            return drowWin(column, row);
-                        case SCISSORS:
-                            return drowLose(column, row);
-                        case PAPER:
-                            return drowDraw(column, row);
-                    }
-            }
+            drowShiftFigure(chosenColumn, chosenRow, column, row);
         }
         return false; // unreachable statement
     }
 
-    private boolean drowDraw(int column, int row) {
+    public void redrowReceived(int fromColumn, int fromRow, int toColumn, int toRow) {
+        if (figures[toColumn][toRow].getTeam() == Team.EMPTY) {
+            figures[toColumn][toRow] = figures[fromColumn][fromRow];
+            figures[fromColumn][fromRow] = EMPTY_FIELD;
+            status = Status.MY_TURN;
+        } else {
+            drowShiftFigure(fromColumn, fromRow, toColumn, toRow);
+        }
+
+        status = Status.MY_TURN;
+    }
+
+    private boolean drowShiftFigure(int fromColumn, int fromRow, int toColumn, int toRow) {
+        switch (figures[fromColumn][fromRow].getFigureImage()) {
+            case ROCK:
+                switch (figures[toColumn][toRow].getFigureImage()) {
+                    case ROCK:
+                        return drowDraw(fromColumn, fromRow, toColumn, toRow);
+                    case SCISSORS:
+                        return drowWin(fromColumn, fromRow, toColumn, toRow);
+                    case PAPER:
+                        return drowLose(fromColumn, fromRow, toColumn, toRow);
+                }
+            case SCISSORS:
+                switch (figures[toColumn][toRow].getFigureImage()) {
+                    case ROCK:
+                        return drowLose(fromColumn, fromRow, toColumn, toRow);
+                    case SCISSORS:
+                        return drowDraw(fromColumn, fromRow, toColumn, toRow);
+                    case PAPER:
+                        return drowWin(fromColumn, fromRow, toColumn, toRow);
+                }
+            case PAPER:
+                switch (figures[toColumn][toRow].getFigureImage()) {
+                    case ROCK:
+                        return drowWin(fromColumn, fromRow, toColumn, toRow);
+                    case SCISSORS:
+                        return drowLose(fromColumn, fromRow, toColumn, toRow);
+                    case PAPER:
+                        return drowDraw(fromColumn, fromRow, toColumn, toRow);
+                }
+        }
+        return false;
+    }
+
+    private boolean drowDraw(int fromColumn, int fromRow, int toColumn, int toRow) {
         resultOfFight = Fight.DRAW;
 
-        figures[chosenColumn][chosenRow].setFigureBackground(FigureBackground.NO_ACTIVITY);
-        figures[column][row].setFigureBackground(FigureBackground.NO_ACTIVITY);
-        figures[chosenColumn][chosenRow].setVisible(true);
-        figures[column][row].setVisible(true);
+        figures[fromColumn][fromRow].setFigureBackground(FigureBackground.NO_ACTIVITY);
+        figures[toColumn][toRow].setFigureBackground(FigureBackground.NO_ACTIVITY);
+        figures[fromColumn][fromRow].setVisible(true);
+        figures[toColumn][toRow].setVisible(true);
 
-        chosenColumn = column;
-        chosenRow = row;
+        chosenColumn = toColumn;
+        chosenRow = toRow;
         return true;
     }
 
-    private boolean drowWin(int column, int row) {
+    private boolean drowWin(int fromColumn, int fromRow, int toColumn, int toRow) {
         resultOfFight = Fight.WIN;
 
-        figures[chosenColumn][chosenRow].setFigureBackground(FigureBackground.NO_ACTIVITY);
-        figures[chosenColumn][chosenRow].setVisible(true);
-        figures[column][row] = figures[chosenColumn][chosenRow];
-        figures[column][row] = EMPTY_FIELD;
+        figures[fromColumn][fromRow].setFigureBackground(FigureBackground.NO_ACTIVITY);
+        figures[fromColumn][fromRow].setVisible(true);
+        figures[toColumn][toRow] = figures[chosenColumn][chosenRow];
+        figures[toColumn][toRow] = EMPTY_FIELD;
 
-        chosenColumn = column;
-        chosenRow = row;
+        chosenColumn = toColumn;
+        chosenRow = toRow;
         return true;
     }
 
-    private boolean drowLose(int column, int row) {
+    private boolean drowLose(int fromColumn, int fromRow, int toColumn, int toRow) {
         resultOfFight = Fight.LOSE;
 
-        figures[column][row].setVisible(true);
-        figures[chosenColumn][chosenRow] = EMPTY_FIELD;
+        figures[toColumn][toRow].setVisible(true);
+        figures[fromColumn][fromRow] = EMPTY_FIELD;
 
-        chosenColumn = column;
-        chosenRow = row;
+        chosenColumn = toColumn;
+        chosenRow = toRow;
         return true;
     }
 
