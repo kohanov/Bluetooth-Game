@@ -63,6 +63,10 @@ public class Desk extends View {
 
     public Figure[][] figures;
 
+    enum Fight {WIN, LOSE, DRAW, BEFORE_FIGHT}
+
+    Fight resultOfFight;
+
     public Desk(Context context, AttributeSet attr) {
         super(context, attr);
         Log.d(TAG, "onCreate");
@@ -152,9 +156,9 @@ public class Desk extends View {
             if (figures[column][row].isVisible()) {
                 canvas.drawBitmap(selectImage(column, row), x, y, null);
             } else {
-                if (figures[column][row].getFigureBackground() == FigureBackground.NO_ACTIVITY){
+                if (figures[column][row].getFigureBackground() == FigureBackground.NO_ACTIVITY) {
                     canvas.drawBitmap((figures[column][row].getTeam() == Team.RED ? fUnknownRed : fUnknownBlue), x, y, null);
-                }else {
+                } else {
                     canvas.drawBitmap((figures[column][row].getTeam() == Team.RED ? cfUnknownRed : cfUnknownBlue), x, y, null);
                 }
             }
@@ -233,16 +237,19 @@ public class Desk extends View {
                         Log.d(TAG, "MOVE");
 
                         if ((chosenRow == row) && (chosenColumn == column)) break; // та же клетка
-
+                        int oldColumn = chosenColumn;
+                        int oldRow = chosenRow;
                         boolean successed = false;
                         boolean changeMyFigure = false;
+                        resultOfFight = Fight.BEFORE_FIGHT;
+
                         for (int contactedField = 0; contactedField < 4; contactedField++) {
                             int drow = dRow[contactedField];
                             int dcolumn = dColumn[contactedField];
                             if ((column == chosenColumn + dcolumn) && (row == chosenRow + drow)) {
                                 successed = tryMove(column, row);
 
-                                if (successed){
+                                if (successed) {
                                     break;
                                 }
                                 if (status == Status.MY_TURN) {
@@ -253,13 +260,18 @@ public class Desk extends View {
                             }
                         }
 
-                        if (!changeMyFigure){
-                            if (successed){
-//                            status = Status.OPPONENT_TURN;
-//                            //TODO send msg
-                                MainActivity.send("message");
-                            }else {
-                               tryChangeFigure(column,row);
+                        if (!changeMyFigure) {
+                            if (successed) {
+                                //TODO send msg
+                                if (resultOfFight != Fight.DRAW) {
+                                    //send win || lose || step to empty field
+                                } else {
+                                    // send draw
+                                }
+
+                                status = Status.OPPONENT_TURN;
+                            } else {
+                                tryChangeFigure(column, row);
                             }
                         }
 
@@ -267,10 +279,7 @@ public class Desk extends View {
                         break;
                     default:
                         //OPPONENT_TURN
-                        Log.d(TAG, "OPPONENT_TURN");
-
-                        // TODO !!! ONLY DEBUG!!!
-                        status = Status.MY_TURN;
+                        Log.d(TAG, "OPPONENT_TURN. you should wait!");
                         break;
                 }
                 break;
@@ -318,12 +327,78 @@ public class Desk extends View {
         }
 
         if (figures[column][row].getTeam() == OPPONENT_COLOR) {
-            // TODO FIGHT!!! send msg
             status = Status.OPPONENT_TURN;
-            return true;
-        }
 
-        return false;
+            highlight(chosenColumn, chosenRow, false);
+
+            switch (figures[chosenColumn][chosenRow].getFigureImage()) {
+                case ROCK:
+                    switch (figures[column][row].getFigureImage()) {
+                        case ROCK:
+                            return drowDraw(column, row);
+                        case SCISSORS:
+                            return drowWin(column, row);
+                        case PAPER:
+                            return drowLose(column, row);
+                    }
+                case SCISSORS:
+                    switch (figures[column][row].getFigureImage()) {
+                        case ROCK:
+                            return drowLose(column, row);
+                        case SCISSORS:
+                            return drowDraw(column, row);
+                        case PAPER:
+                            return drowWin(column, row);
+                    }
+                case PAPER:
+                    switch (figures[column][row].getFigureImage()) {
+                        case ROCK:
+                            return drowWin(column, row);
+                        case SCISSORS:
+                            return drowLose(column, row);
+                        case PAPER:
+                            return drowDraw(column, row);
+                    }
+            }
+        }
+        return false; // unreachable statement
+    }
+
+    private boolean drowDraw(int column, int row) {
+        resultOfFight = Fight.DRAW;
+
+        figures[chosenColumn][chosenRow].setFigureBackground(FigureBackground.NO_ACTIVITY);
+        figures[column][row].setFigureBackground(FigureBackground.NO_ACTIVITY);
+        figures[chosenColumn][chosenRow].setVisible(true);
+        figures[column][row].setVisible(true);
+
+        chosenColumn = column;
+        chosenRow = row;
+        return true;
+    }
+
+    private boolean drowWin(int column, int row) {
+        resultOfFight = Fight.WIN;
+
+        figures[chosenColumn][chosenRow].setFigureBackground(FigureBackground.NO_ACTIVITY);
+        figures[chosenColumn][chosenRow].setVisible(true);
+        figures[column][row] = figures[chosenColumn][chosenRow];
+        figures[column][row] = EMPTY_FIELD;
+
+        chosenColumn = column;
+        chosenRow = row;
+        return true;
+    }
+
+    private boolean drowLose(int column, int row) {
+        resultOfFight = Fight.LOSE;
+
+        figures[column][row].setVisible(true);
+        figures[chosenColumn][chosenRow] = EMPTY_FIELD;
+
+        chosenColumn = column;
+        chosenRow = row;
+        return true;
     }
 
     private boolean checkBorders(int column, int row) {
@@ -331,15 +406,14 @@ public class Desk extends View {
     }
 
     private void highlight(int column, int row, boolean chosen) {
-        Log.d(TAG, "highlight from ["+row+"]["+column+"]");
+        Log.d(TAG, "highlight from [" + row + "][" + column + "]");
 
         for (int contactedField = 0; contactedField < 4; contactedField++) {
             int drow = dRow[contactedField];
             int dcolumn = dColumn[contactedField];
             if (checkBorders(column + dcolumn, row + drow)) {
                 if (figures[column + dcolumn][row + drow].getTeam() == OPPONENT_COLOR
-                        || figures[column + dcolumn][row + drow].getTeam() == Team.EMPTY)
-                {
+                        || figures[column + dcolumn][row + drow].getTeam() == Team.EMPTY) {
                     Log.d(TAG, "highlight: row = " + row + " column = " + column);
 
                     figures[column + dcolumn][row + drow].setFigureBackground(chosen ? FigureBackground.CHOSEN : FigureBackground.NO_ACTIVITY);
