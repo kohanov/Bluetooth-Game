@@ -127,6 +127,8 @@ public class MainActivity extends ListActivity {
                                         int newColumn = (int) message.charAt(3) - (int) '0';
                                         int newRow = (int) message.charAt(4) - (int) '0';
 
+                                        desk.redrowReceived(oldColumn,oldRow, newColumn, newRow);
+
                                         break;
                                     case 'd'://конец игры
 
