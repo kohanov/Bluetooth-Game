@@ -25,7 +25,7 @@ import static com.example.home.blgame.MainActivity.*;
  */
 public class Desk extends View {
 
-    private final int countFiguresInRow = 6;
+    public final int countFiguresInRow = 6;
     private int deskSize;
     private int fieldSize;
 
@@ -152,9 +152,9 @@ public class Desk extends View {
             if (figures[column][row].isVisible()) {
                 canvas.drawBitmap(selectImage(column, row), x, y, null);
             } else {
-                if (figures[column][row].getFigureBackground() == FigureBackground.NO_ACTIVITY){
+                if (figures[column][row].getFigureBackground() == FigureBackground.NO_ACTIVITY) {
                     canvas.drawBitmap((figures[column][row].getTeam() == Team.RED ? fUnknownRed : fUnknownBlue), x, y, null);
-                }else {
+                } else {
                     canvas.drawBitmap((figures[column][row].getTeam() == Team.RED ? cfUnknownRed : cfUnknownBlue), x, y, null);
                 }
             }
@@ -233,7 +233,8 @@ public class Desk extends View {
                         Log.d(TAG, "MOVE");
 
                         if ((chosenRow == row) && (chosenColumn == column)) break; // та же клетка
-
+                        int oldColumn = chosenColumn;
+                        int oldRow = chosenRow;
                         boolean successed = false;
                         boolean changeMyFigure = false;
                         for (int contactedField = 0; contactedField < 4; contactedField++) {
@@ -242,7 +243,7 @@ public class Desk extends View {
                             if ((column == chosenColumn + dcolumn) && (row == chosenRow + drow)) {
                                 successed = tryMove(column, row);
 
-                                if (successed){
+                                if (successed) {
                                     break;
                                 }
                                 if (status == Status.MY_TURN) {
@@ -253,13 +254,18 @@ public class Desk extends View {
                             }
                         }
 
-                        if (!changeMyFigure){
-                            if (successed){
+                        if (!changeMyFigure) {
+                            if (successed) {
 //                            status = Status.OPPONENT_TURN;
-//                            //TODO send msg
-                                MainActivity.send("message");
-                            }else {
-                               tryChangeFigure(column,row);
+                                //TODO send msg; //2_oldCol_oldChosen|||chosenCol_chosenRow
+                                StringBuilder message = new StringBuilder("c");
+                                message.append(((Integer) (countFiguresInRow - oldColumn - 1)).toString());
+                                message.append(((Integer) (countFiguresInRow - oldRow - 1)).toString());
+                                message.append(((Integer) (countFiguresInRow - chosenColumn - 1)).toString());
+                                message.append(((Integer) (countFiguresInRow - chosenRow - 1)).toString());
+                                MainActivity.sendPrepared("message");
+                            } else {
+                                tryChangeFigure(column, row);
                             }
                         }
 
@@ -331,15 +337,14 @@ public class Desk extends View {
     }
 
     private void highlight(int column, int row, boolean chosen) {
-        Log.d(TAG, "highlight from ["+row+"]["+column+"]");
+        Log.d(TAG, "highlight from [" + row + "][" + column + "]");
 
         for (int contactedField = 0; contactedField < 4; contactedField++) {
             int drow = dRow[contactedField];
             int dcolumn = dColumn[contactedField];
             if (checkBorders(column + dcolumn, row + drow)) {
                 if (figures[column + dcolumn][row + drow].getTeam() == OPPONENT_COLOR
-                        || figures[column + dcolumn][row + drow].getTeam() == Team.EMPTY)
-                {
+                        || figures[column + dcolumn][row + drow].getTeam() == Team.EMPTY) {
                     Log.d(TAG, "highlight: row = " + row + " column = " + column);
 
                     figures[column + dcolumn][row + drow].setFigureBackground(chosen ? FigureBackground.CHOSEN : FigureBackground.NO_ACTIVITY);
