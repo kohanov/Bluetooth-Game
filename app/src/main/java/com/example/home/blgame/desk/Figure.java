@@ -11,7 +11,7 @@ public class Figure {
     public enum FigureImage {ROCK, SCISSORS, PAPER, NONE}
     public enum Team {RED, BLUE, EMPTY}
 
-    FigureBackground figureBackground;
+    public FigureBackground figureBackground;
     FigureImage figureImage;
     boolean visible;
     Team team;

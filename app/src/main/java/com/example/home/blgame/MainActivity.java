@@ -14,12 +14,19 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
+
+import com.example.home.blgame.desk.Desk;
+import com.example.home.blgame.desk.Figure;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,16 +38,29 @@ public class MainActivity extends ListActivity {
     private final static String IS_SERVER = "isServer";
     private ViewFlipper viewFlipper;
     private static String MAC;
+    private boolean isStarted = false;
     private BluetoothAdapter mBluetoothAdapter;
     private final List<BluetoothDevice> discoveredDevices = new ArrayList<BluetoothDevice>();
     private ArrayAdapter<BluetoothDevice> listAdapter;
     private BroadcastReceiver Receiver = null, FinishedReceiver = null;
     private TextView textData;
     private EditText textMessage;
-    private Client client = null;
+    public static Client client = null;
     private Server server = null;
 
-    private class WriteTask extends AsyncTask<String, Void, Void> {
+
+
+    private Desk desk;
+    private ImageView myIcon;
+    private ImageView opponentIcon;
+    private TextView players;
+
+    public enum Status{BEFORE_START, MY_TURN, MOVE, OPPONENT_TURN}
+    public static Status status;
+    public static Figure.Team MY_COLOR;
+    public static Figure.Team OPPONENT_COLOR;
+
+    private static class WriteTask extends AsyncTask<String, Void, Void> {
         @Override
         protected Void doInBackground(String... args) {
             try {
@@ -72,8 +92,25 @@ public class MainActivity extends ListActivity {
                                     Log.d("MainActivity", e.getLocalizedMessage());
                                 }
 
-                            }
-                            //TODO: обрабатывать входящее сообщение здесь
+                            } else//TODO: обрабатывать входящее сообщение здесь
+                                switch (message.charAt(0)) {
+                                    case 'a'://противник готов
+
+                                        break;
+                                    case 'b'://передаём значения?
+
+                                        break;
+                                    case 'c'://сделан шаг
+
+                                        break;
+                                    case 'd'://конец игры
+
+                                        break;
+                                    case 'e'://сообщение?
+                                    desk.figures[1][1] = desk.figures[1][2];
+                                    //desk.figures[1][1].figureBackground = Figure.FigureBackground.CHOSEN;
+                                        break;
+                                }
                             textData.setText(textData.getText().toString() + "\n" + message);
                         }
                     });
@@ -85,6 +122,11 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        MY_COLOR = Figure.Team.RED;
+        OPPONENT_COLOR = Figure.Team.BLUE;
+        status = Status.MY_TURN;
+
         setContentView(R.layout.activity_main);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
@@ -108,6 +150,21 @@ public class MainActivity extends ListActivity {
         };
         setListAdapter(listAdapter);
         checkBluetoothEnabled();
+
+
+
+
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//        isServer = savedInstanceState.getBoolean(IS_SERVER);
+
+        desk = (Desk) findViewById(R.id.desk);
+        myIcon = (ImageView) findViewById(R.id.myIcon);
+        opponentIcon = (ImageView) findViewById(R.id.opponentIcon);
+        players = (TextView) findViewById(R.id.playersView);
+        myIcon.setImageResource(R.drawable.red_unknown);
+        opponentIcon.setImageResource(R.drawable.blue_unknown);
+        players.setText("Red\n vs\n Blue");
     }
 
     public void checkBluetoothEnabled() {
@@ -130,6 +187,10 @@ public class MainActivity extends ListActivity {
     }
 
     public void discoverDevices(View view) {
+        if (isStarted) {
+            viewFlipper.showNext();
+            return;
+        }
         checkBluetoothEnabled();
         discoveredDevices.clear();
         listAdapter.notifyDataSetChanged();
@@ -218,6 +279,8 @@ public class MainActivity extends ListActivity {
         Toast.makeText(this, "Вы подключились к устройству \"" + discoveredDevices.get(position).getName() + "\"", Toast.LENGTH_SHORT).show();
         //показываем окно игры
         viewFlipper.showNext();
+        ((Button)findViewById(R.id.search)).setText("Назад в игру");
+        isStarted = true;
         //TODO: отправить сообщение о начале игры
     }
 
@@ -242,5 +305,11 @@ public class MainActivity extends ListActivity {
         discoveredDevices.clear();
         listAdapter.notifyDataSetChanged();
 
+    }
+
+    public static void send(String message) {
+        if (client != null) {
+            new WriteTask().execute(message);
+        }
     }
 }

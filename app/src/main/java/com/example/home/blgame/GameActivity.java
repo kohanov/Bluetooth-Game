@@ -45,7 +45,7 @@ public final class GameActivity extends Activity {
         OPPONENT_COLOR = Figure.Team.BLUE;
         status = Status.MY_TURN;
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_game);
 
         desk = (Desk) findViewById(R.id.desk);
         myIcon = (ImageView) findViewById(R.id.myIcon);

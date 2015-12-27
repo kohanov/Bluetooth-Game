@@ -13,10 +13,11 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.example.home.blgame.MainActivity;
 import com.example.home.blgame.R;
 
 import static com.example.home.blgame.desk.Figure.*;
-import static com.example.home.blgame.GameActivity.*;
+import static com.example.home.blgame.MainActivity.*;
 
 
 /**
@@ -60,7 +61,7 @@ public class Desk extends View {
     private Bitmap cfPaperBlue;
 
 
-    private Figure[][] figures;
+    public Figure[][] figures;
 
     public Desk(Context context, AttributeSet attr) {
         super(context, attr);
@@ -100,7 +101,7 @@ public class Desk extends View {
         for (int column = 0; column < countFiguresInRow; column++) {
             for (int row = 0; row < countFiguresInRow; row++) {
                 if (row < 2) {
-                    figures[column][row] = new Figure(FigureBackground.NO_ACTIVITY, FigureImage.NONE, false, OPPONENT_COLOR);//OPPONENT
+                    figures[column][row] = new Figure(FigureBackground.NO_ACTIVITY, FigureImage.ROCK, false, OPPONENT_COLOR);//OPPONENT
                 } else if (row >= countFiguresInRow - 2) {
                     figures[column][row] = new Figure(FigureBackground.NO_ACTIVITY, FigureImage.ROCK, false, MY_COLOR);//MY
                 } else {
@@ -256,6 +257,7 @@ public class Desk extends View {
                             if (successed){
 //                            status = Status.OPPONENT_TURN;
 //                            //TODO send msg
+                                MainActivity.send("message");
                             }else {
                                tryChangeFigure(column,row);
                             }
