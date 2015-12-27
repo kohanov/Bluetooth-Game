@@ -25,7 +25,7 @@ import static com.example.home.blgame.MainActivity.*;
  */
 public class Desk extends View {
 
-    private final int countFiguresInRow = 6;
+    public final int countFiguresInRow = 6;
     private int deskSize;
     private int fieldSize;
 
@@ -262,12 +262,13 @@ public class Desk extends View {
 
                         if (!changeMyFigure) {
                             if (successed) {
-                                //TODO send msg
-                                if (resultOfFight != Fight.DRAW) {
-                                    //send win || lose || step to empty field
-                                } else {
-                                    // send draw
-                                }
+                                // send msg
+                                    StringBuilder message = new StringBuilder("c");
+                                    message.append(((Integer) (countFiguresInRow - oldColumn - 1)).toString());
+                                    message.append(((Integer) (countFiguresInRow - oldRow - 1)).toString());
+                                    message.append(((Integer) (countFiguresInRow - chosenColumn - 1)).toString());
+                                    message.append(((Integer) (countFiguresInRow - chosenRow - 1)).toString());
+                                    MainActivity.sendPrepared("message");
 
                                 status = Status.OPPONENT_TURN;
                             } else {

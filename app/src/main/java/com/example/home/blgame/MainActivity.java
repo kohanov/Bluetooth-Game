@@ -37,7 +37,6 @@ public class MainActivity extends ListActivity {
     public final static String AppName = "Blgame";
     private final static String IS_SERVER = "isServer";
     private ViewFlipper viewFlipper;
-    private static String MAC;
     private boolean isStarted = false;
     private BluetoothAdapter mBluetoothAdapter;
     private final List<BluetoothDevice> discoveredDevices = new ArrayList<BluetoothDevice>();
@@ -49,13 +48,13 @@ public class MainActivity extends ListActivity {
     private Server server = null;
 
 
-
     private Desk desk;
     private ImageView myIcon;
     private ImageView opponentIcon;
     private TextView players;
 
-    public enum Status{BEFORE_START, MY_TURN, MOVE, OPPONENT_TURN}
+    public enum Status {BEFORE_START, MY_TURN, MOVE, OPPONENT_TURN}
+
     public static Status status;
     public static Figure.Team MY_COLOR;
     public static Figure.Team OPPONENT_COLOR;
@@ -83,7 +82,9 @@ public class MainActivity extends ListActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            Log.d("MainActivity", message);
                             if (client == null && mBluetoothAdapter.checkBluetoothAddress(message)) {
+
                                 try {
                                     BluetoothDevice temp = mBluetoothAdapter.getRemoteDevice(message);
                                     client = new Client(temp, communicatorService);
@@ -97,21 +98,46 @@ public class MainActivity extends ListActivity {
                                     case 'a'://противник готов
 
                                         break;
-                                    case 'b'://передаём значения?
-
+                                    case 'b'://передаём начальные значения
+                                        int i = 1;
+                                        for (int column = 0; column < desk.countFiguresInRow; column++) {
+                                            for (int row = desk.countFiguresInRow - 2; row < desk.countFiguresInRow; row++) {
+                                                int columnchanged = desk.countFiguresInRow - column - 1;
+                                                int rowchanged = desk.countFiguresInRow - row - 1;
+                                                switch (message.charAt(i)) {
+                                                    case 1:
+                                                        desk.figures[columnchanged][rowchanged].setFigureImage(Figure.FigureImage.ROCK);
+                                                        i++;
+                                                        break;
+                                                    case 2:
+                                                        desk.figures[columnchanged][rowchanged].setFigureImage(Figure.FigureImage.SCISSORS);
+                                                        i++;
+                                                        break;
+                                                    case 3:
+                                                        desk.figures[columnchanged][rowchanged].setFigureImage(Figure.FigureImage.PAPER);
+                                                        i++;
+                                                        break;
+                                                }
+                                            }
+                                        }
                                         break;
                                     case 'c'://сделан шаг
+                                        int oldColumn = (int) message.charAt(1) - (int) '0';
+                                        int oldRow = (int) message.charAt(2) - (int) '0';
+                                        int newColumn = (int) message.charAt(3) - (int) '0';
+                                        int newRow = (int) message.charAt(4) - (int) '0';
 
                                         break;
                                     case 'd'://конец игры
 
                                         break;
                                     case 'e'://сообщение?
-                                    desk.figures[1][1] = desk.figures[1][2];
-                                    //desk.figures[1][1].figureBackground = Figure.FigureBackground.CHOSEN;
+                                        desk.figures[1][1] = desk.figures[1][2];
+                                        //desk.figures[1][1].figureBackground = Figure.FigureBackground.CHOSEN;
                                         break;
                                 }
-                            textData.setText(textData.getText().toString() + "\n" + message);
+                            desk.invalidate();
+                            textData.setText(message + "\n" + textData.getText().toString());
                         }
                     });
                 }
@@ -133,8 +159,6 @@ public class MainActivity extends ListActivity {
             // Device does not support Bluetooth
             System.exit(1);
         }
-        MAC = mBluetoothAdapter.getAddress();
-        Log.d("MainActivity MAC", MAC);
         textData = (TextView) findViewById(R.id.data_text);
         textData.setText("Получено: ");
         viewFlipper = (ViewFlipper) findViewById(R.id.flipper);
@@ -150,8 +174,6 @@ public class MainActivity extends ListActivity {
         };
         setListAdapter(listAdapter);
         checkBluetoothEnabled();
-
-
 
 
         //requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -274,24 +296,17 @@ public class MainActivity extends ListActivity {
         BluetoothDevice deviceSelected = discoveredDevices.get(position);
         client = new Client(deviceSelected, communicatorService);
         client.start();
-        //передаём второму устройству наш MAC адрес для подключения
-        new WriteTask().execute(MAC);
         Toast.makeText(this, "Вы подключились к устройству \"" + discoveredDevices.get(position).getName() + "\"", Toast.LENGTH_SHORT).show();
         //показываем окно игры
         viewFlipper.showNext();
-        ((Button)findViewById(R.id.search)).setText("Назад в игру");
-        isStarted = true;
+        //((Button) findViewById(R.id.search)).setText("Назад в игру");
+        //isStarted = true;
         //TODO: отправить сообщение о начале игры
     }
 
     public void sendMessage(View view) {
         if (client != null) {
             //TODO: подготовить информацию к отправке
-            // bool is server
-            //value: 00 - rock, 01 - paper, 10 - scissors
-            //0 - conenct/ startActivity
-            //1: server & ready & values xx - value, xxx - x, xxx - y
-            //
             new WriteTask().execute(textMessage.getText().toString());
             textMessage.setText("");
         } else {
@@ -307,9 +322,29 @@ public class MainActivity extends ListActivity {
 
     }
 
-    public static void send(String message) {
+    public static void sendPrepared(String message) {
         if (client != null) {
             new WriteTask().execute(message);
         }
+    }
+
+    public void sendReady(View view) {
+        StringBuilder message = new StringBuilder("b");
+        for (int column = 0; column < desk.countFiguresInRow; column++) {
+            for (int row = desk.countFiguresInRow - 2; row < desk.countFiguresInRow; row++) {
+                switch (desk.figures[column][row].getFigureImage()) {
+                    case ROCK:
+                        message.append("1");
+                        break;
+                    case SCISSORS:
+                        message.append("2");
+                        break;
+                    case PAPER:
+                        message.append("3");
+                        break;
+                }
+            }
+        }
+        new WriteTask().execute(message.toString());
     }
 }
