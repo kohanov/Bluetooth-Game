@@ -35,10 +35,10 @@ public class Client extends Thread {
     public void run() {
         // Cancel discovery because it will slow down the connection
         mBluetoothAdapter.cancelDiscovery();
-
         try {
             // Connect the device through the socket. This will block
             // until it succeeds or throws an exception
+
             Log.d("Client", "Try to connect");
             mmSocket.connect();
             Log.d("Client", "Connected");
@@ -54,6 +54,7 @@ public class Client extends Thread {
                 }
             }).start();
         } catch (IOException connectException) {
+            Log.d("Client", "Connect timeout!!!!!!11!!1!1");
             // Unable to connect; close the socket and get out
             try {
                 mmSocket.close();

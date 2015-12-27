@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -43,9 +44,10 @@ public class MainActivity extends ListActivity {
     private final List<BluetoothDevice> discoveredDevices = new ArrayList<BluetoothDevice>();
     private ArrayAdapter<BluetoothDevice> listAdapter;
     private BroadcastReceiver Receiver = null, FinishedReceiver = null;
+    private ProgressDialog progressDialog;
     private TextView textData;
     private EditText textMessage;
-    public static Client client = null;
+    public static Client client;
     private Server server = null;
 
 
@@ -63,13 +65,16 @@ public class MainActivity extends ListActivity {
     private static class WriteTask extends AsyncTask<String, Void, Void> {
         @Override
         protected Void doInBackground(String... args) {
+            Log.d(tag, "doInBackground");
             try {
                 client.getCommunicator().write(args[0]);
+                Log.d(tag, args[0]);
             } catch (Exception e) {
-                Log.d("WriteTask error: ", e.getClass().getSimpleName() + " " + e.getLocalizedMessage());
+                Log.d(tag, "Error: "+ e.getClass().getSimpleName() + " " + e.getLocalizedMessage());
             }
             return null;
         }
+        private final String tag = "WriteTask";
     }
 
     private final CommunicatorService communicatorService = new CommunicatorService() {
@@ -143,9 +148,8 @@ public class MainActivity extends ListActivity {
                                         int oldRow = (int) message.charAt(2) - (int) '0';
                                         int newColumn = (int) message.charAt(3) - (int) '0';
                                         int newRow = (int) message.charAt(4) - (int) '0';
-
                                         desk.redrowReceived(oldColumn,oldRow, newColumn, newRow);
-
+                                        desk.invalidate();
                                         break;
                                     case 'd'://конец игры
 
@@ -167,6 +171,7 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
 
         MY_COLOR = Figure.Team.RED;
         OPPONENT_COLOR = Figure.Team.BLUE;
@@ -228,10 +233,12 @@ public class MainActivity extends ListActivity {
     }
 
     public void discoverDevices(View view) {
+        /*
         if (isStarted) {
             viewFlipper.showNext();
             return;
         }
+        */
         checkBluetoothEnabled();
         discoveredDevices.clear();
         listAdapter.notifyDataSetChanged();
@@ -252,26 +259,26 @@ public class MainActivity extends ListActivity {
                 }
             }
         };
-        /*
+
         if (FinishedReceiver == null) {
             FinishedReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     findViewById(R.id.finded).setVisibility(View.VISIBLE);
                     findViewById(android.R.id.list).setEnabled(true);
-                    //if (progressDialog != null)
-                    //    progressDialog.dismiss();
+                    if (progressDialog != null)
+                        progressDialog.dismiss();
                     Toast.makeText(getBaseContext(), "Поиск закончен. Выберите устройство.", Toast.LENGTH_LONG).show();
                     unregisterReceiver(FinishedReceiver);
                 }
             };
         }
-        */
+
         // Register the BroadcastReceiver
         registerReceiver(Receiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-        //registerReceiver(FinishedReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
-        //getListView().setEnabled(false);
-        //progressDialog = ProgressDialog.show(this, "Поиск устройств", "Подождите...");
+        registerReceiver(FinishedReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
+        getListView().setEnabled(false);
+        progressDialog = ProgressDialog.show(this, "Поиск устройств", "Подождите...");
         mBluetoothAdapter.startDiscovery();
     }
 
@@ -308,24 +315,29 @@ public class MainActivity extends ListActivity {
     }
 
     public void onListItemClick(ListView parent, View v, int position, long id) {
+        Log.d(TAG, "onListItemClick");
+        unregisterReceiver(Receiver);
         //client chosen
         if (client != null) {
             client.cancel();
         }
         BluetoothDevice deviceSelected = discoveredDevices.get(position);
+        mBluetoothAdapter.cancelDiscovery();
         client = new Client(deviceSelected, communicatorService);
         client.start();
         Toast.makeText(this, "Вы подключились к устройству \"" + discoveredDevices.get(position).getName() + "\"", Toast.LENGTH_SHORT).show();
         //показываем окно игры
-        viewFlipper.showNext();
         //((Button) findViewById(R.id.search)).setText("Назад в игру");
         findViewById(R.id.gotoGame).setVisibility(View.VISIBLE);
         findViewById(R.id.gotoGame).setClickable(true);
         isStarted = true;
         //TODO: отправить сообщение о начале игры
+        new WriteTask().execute("Hello!");
+        viewFlipper.showNext();
     }
 
     public void sendMessage(View view) {
+        Log.d(TAG, "sendMessage");
         if (client != null) {
             //TODO: подготовить информацию к отправке
             new WriteTask().execute(textMessage.getText().toString());
@@ -348,22 +360,32 @@ public class MainActivity extends ListActivity {
     }
 
     public void setReady(View view) {
+        Log.d(TAG, "setReady");
+
         ((Button) findViewById(R.id.status)).setClickable(false);
-        if (isFirst)
+        if (isFirst) {
             new WriteTask().execute("ap");
-        else {
+            ((Button) findViewById(R.id.status)).setText("Красный");
+            status = Status.OPPONENT_TURN;
+        } else {
             new WriteTask().execute("as");
+            ((Button) findViewById(R.id.status)).setText("Синий");
             status = Status.OPPONENT_TURN;
         }
+        sendReady();
     }
 
     public static void sendPrepared(String message) {
+        Log.d("SEMD PREPEARED", "sendMessage");
+
         if (client != null) {
             new WriteTask().execute(message);
         }
     }
 
-    public void sendReady(View view) {
+    public void sendReady() {
+        Log.d(TAG, "sendReady");
+
         StringBuilder message = new StringBuilder("b");
         for (int column = 0; column < desk.countFiguresInRow; column++) {
             for (int row = desk.countFiguresInRow - 2; row < desk.countFiguresInRow; row++) {
@@ -382,4 +404,6 @@ public class MainActivity extends ListActivity {
         }
         new WriteTask().execute(message.toString());
     }
+
+    private final String TAG = "MainActivity";
 }

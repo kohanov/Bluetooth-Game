@@ -269,7 +269,8 @@ public class Desk extends View {
                                 message.append(((Integer) (countFiguresInRow - oldRow - 1)).toString());
                                 message.append(((Integer) (countFiguresInRow - chosenColumn - 1)).toString());
                                 message.append(((Integer) (countFiguresInRow - chosenRow - 1)).toString());
-                                MainActivity.sendPrepared("message");
+                                Log.d(TAG,"send message:"+message);
+                                MainActivity.sendPrepared(message.toString());
 
                                 status = Status.OPPONENT_TURN;
                             } else {
@@ -312,6 +313,8 @@ public class Desk extends View {
             figures[column][row].setFigureBackground(FigureBackground.NO_ACTIVITY);
             figures[chosenColumn][chosenRow] = EMPTY_FIELD;
 
+            chosenColumn = column;
+            chosenRow = row;
             return true;
         }
 

@@ -47,6 +47,7 @@
             android:onClick="gotoGame"
             android:text="В игру" />
 
+
         <Button
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -75,8 +76,10 @@
         android:gravity="center"
         android:padding="20dp"
         android:orientation="vertical">
+
         <Button
             android:id="@+id/status"
+            android:text="Не готов"
             android:onClick="setReady"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content" />
