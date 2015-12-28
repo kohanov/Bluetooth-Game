@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Blgame</string>
     <string name="enableBT">Включить Bluetooth</string>
+    <string name="opponentTurn">Ход противника</string>
+    <string name="congratulation">Вы выиграли!</string>
+    <string name="itsapity">Вы проиграли!</string>
+    <string name="ensureReady">Подтвердить готовность</string>
 </resources>

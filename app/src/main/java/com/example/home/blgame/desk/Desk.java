@@ -43,7 +43,8 @@ public class Desk extends View {
     private Bitmap fBackground;
     private Bitmap cfBackground;
 
-    //Figures
+    //Bitmaps of Figures
+    //Prefixes: "f"  - figure, "cf" - chosen figure
     private Bitmap fUnknownRed;
     private Bitmap fUnknownBlue;
     private Bitmap fScissorsRed;
@@ -65,8 +66,8 @@ public class Desk extends View {
 
     public Figure[][] figures;
     public MainActivity mainActivity;
-    public int myFigures;
-    public int opponentFigures;
+    public int myFigures;// count of my alive figures
+    public int opponentFigures;// count of opponent alive figures
 
 
     enum Fight {WIN, LOSE, DRAW, BEFORE_FIGHT, CHANGED, EMPTY}
@@ -133,7 +134,7 @@ public class Desk extends View {
 
         if (shouldScale) {
             shouldScale = false;
-            fBackground = fBackground.createScaledBitmap(fBackground, fieldSize, fieldSize, false);// false - без сглаживания
+            fBackground = fBackground.createScaledBitmap(fBackground, fieldSize, fieldSize, false);
             fUnknownRed = fUnknownRed.createScaledBitmap(fUnknownRed, fieldSize, fieldSize, false);
             fUnknownBlue = fUnknownBlue.createScaledBitmap(fUnknownBlue, fieldSize, fieldSize, false);
             fScissorsRed = fScissorsRed.createScaledBitmap(fScissorsRed, fieldSize, fieldSize, false);
@@ -249,7 +250,7 @@ public class Desk extends View {
                     case MOVE:
                         Log.d(TAG, "MOVE");
 
-                        if ((chosenRow == row) && (chosenColumn == column)) break; // та же клетка
+                        if ((chosenRow == row) && (chosenColumn == column)) break; //the same field
 
                         int oldColumn = chosenColumn;
                         int oldRow = chosenRow;
@@ -272,7 +273,7 @@ public class Desk extends View {
                                 --opponentFigures;
                                 step.reverse().append("ws").reverse();
                                 MainActivity.sendPrepared(step.toString());
-                                ((Button)mainActivity.findViewById(R.id.status)).setText("Ход противника");
+                                ((Button) mainActivity.findViewById(R.id.status)).setText(R.string.opponentTurn);
                                 if (opponentFigures == 0) {
                                     Log.d(TAG, "you are WINNER!");
                                     showWin();
@@ -285,7 +286,7 @@ public class Desk extends View {
                                 --myFigures;
                                 step.reverse().append("ls").reverse();
                                 MainActivity.sendPrepared(step.toString());
-                                ((Button)mainActivity.findViewById(R.id.status)).setText("Ход противника");
+                                ((Button) mainActivity.findViewById(R.id.status)).setText(R.string.opponentTurn);
                                 if (myFigures == 0) {
                                     Log.d(TAG, "you are LOSER!");
                                     showLose();
@@ -298,13 +299,13 @@ public class Desk extends View {
                                 step.reverse().append("ds").reverse();
                                 MainActivity.sendPrepared(step.toString());
                                 status = Status.OPPONENT_TURN;
-                                ((Button)mainActivity.findViewById(R.id.status)).setText("Ход противника");
+                                ((Button) mainActivity.findViewById(R.id.status)).setText(R.string.opponentTurn);
                                 break;
                             case EMPTY:
                                 step.reverse().append("es").reverse();
                                 MainActivity.sendPrepared(step.toString());
                                 status = Status.OPPONENT_TURN;
-                                ((Button)mainActivity.findViewById(R.id.status)).setText("Ход противника");
+                                ((Button) mainActivity.findViewById(R.id.status)).setText(R.string.opponentTurn);
                                 break;
                             case CHANGED:
                                 status = Status.MOVE;
@@ -326,19 +327,6 @@ public class Desk extends View {
         return super.onTouchEvent(event);
     }
 
-//    private void updateCountFiguresOnDesk(Fight resultOfFight) {
-//        switch (resultOfFight) {
-//            case WIN:
-//                --opponentFigures;
-//                break;
-//            case LOSE:
-//                --myFigures;
-//                break;
-//            default://DRAW
-//                break;
-//        }
-//    }
-
     private void tryChangeFigure(int column, int row) {
         Log.d(TAG, "tryChangeFigure");
 
@@ -358,6 +346,7 @@ public class Desk extends View {
             return false;
         }
 
+        //move to empty field
         if (figures[column][row].getTeam() == Team.EMPTY) {
             highlight(chosenColumn, chosenRow, false);
             figures[column][row] = figures[chosenColumn][chosenRow];
@@ -371,6 +360,7 @@ public class Desk extends View {
             return true;
         }
 
+        //change chosen figure (still my turn)
         if (figures[column][row].getTeam() == MY_COLOR) {
             highlight(chosenColumn, chosenRow, false);
             figures[chosenColumn][chosenRow].setFigureBackground(FigureBackground.NO_ACTIVITY);
@@ -383,6 +373,7 @@ public class Desk extends View {
             return true;
         }
 
+        //attack opponent
         if (figures[column][row].getTeam() == OPPONENT_COLOR) {
             status = Status.OPPONENT_TURN;
 
@@ -390,9 +381,10 @@ public class Desk extends View {
             drowShiftFigure(chosenColumn, chosenRow, column, row);
             return true;
         }
-        return false; // unreachable statement
+        return false; // unreachable statement, only for IDEA
     }
 
+    //update view with received data
     public void redrowReceived(int fromColumn, int fromRow, int toColumn, int toRow) {
         if (figures[toColumn][toRow].getTeam() == Team.EMPTY) {
             figures[toColumn][toRow] = figures[fromColumn][fromRow];
@@ -400,7 +392,6 @@ public class Desk extends View {
         } else {
             drowShiftFigure(fromColumn, fromRow, toColumn, toRow);
         }
-        //status = Status.MY_TURN;
     }
 
     private boolean drowShiftFigure(int fromColumn, int fromRow, int toColumn, int toRow) {
@@ -480,27 +471,7 @@ public class Desk extends View {
     }
 
     private void highlight(int column, int row, boolean chosen) {
-        Log.d(TAG, "highlight from [" + row + "][" + column + "]");
-
-        if (checkBorders(column, row - 1)) {
-            figures[column][row - 1].setFigureBackground(chosen ? FigureBackground.CHOSEN : FigureBackground.NO_ACTIVITY);
-        }
-        if (checkBorders(column, row + 1)) {
-            figures[column][row + 1].setFigureBackground(chosen ? FigureBackground.CHOSEN : FigureBackground.NO_ACTIVITY);
-        }
-
-//        for (int contactedField = 0; contactedField < 4; contactedField++) {
-//            int drow = dRow[contactedField];
-//            int dcolumn = dColumn[contactedField];
-//            if (checkBorders(column + dcolumn, row + drow)) {
-//                if (figures[column + dcolumn][row + drow].getTeam() == OPPONENT_COLOR
-//                        || figures[column + dcolumn][row + drow].getTeam() == Team.EMPTY) {
-//                    Log.d(TAG, "highlight: row = " + row + " column = " + column);
-//
-//                    figures[column + dcolumn][row + drow].setFigureBackground(chosen ? FigureBackground.CHOSEN : FigureBackground.NO_ACTIVITY);
-//                }
-//            }
-//        }
+//        Log.d(TAG, "highlight from [" + row + "][" + column + "]");
     }
 
     private void nextFigure(int column, int row) {
@@ -533,13 +504,13 @@ public class Desk extends View {
     }
 
     public void showWin() {
-        Toast.makeText(mainActivity, "Вы выиграли!", Toast.LENGTH_LONG).show();
+        Toast.makeText(mainActivity, R.string.congratulation, Toast.LENGTH_LONG).show();
         initGame();
         MainActivity.viewFlipper.showPrevious();
     }
 
     public void showLose() {
-        Toast.makeText(mainActivity, "Вы проиграли!", Toast.LENGTH_LONG).show();
+        Toast.makeText(mainActivity, R.string.itsapity, Toast.LENGTH_LONG).show();
         initGame();
         MainActivity.viewFlipper.showPrevious();
     }
@@ -562,12 +533,12 @@ public class Desk extends View {
             }
         }
         mainActivity.isFirst = true;
-        ((Button)mainActivity.findViewById(R.id.status)).setText("Подтвердить готовность");
+        ((Button) mainActivity.findViewById(R.id.status)).setText(R.string.ensureReady);
         mainActivity.findViewById(R.id.status).setClickable(true);
         MY_COLOR = Team.RED;
         OPPONENT_COLOR = Team.BLUE;
         status = Status.BEFORE_START;
     }
 
-    private final String TAG = "debug DESK";
+    private final String TAG = "DESK";
 }
