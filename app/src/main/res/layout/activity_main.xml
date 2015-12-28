@@ -35,7 +35,7 @@
         <ListView
             android:id="@android:id/list"
             android:layout_width="wrap_content"
-            android:layout_height="180dp" />
+            android:layout_height="200dp" />
 
         <Button
             android:id="@+id/gotoGame"
@@ -48,7 +48,7 @@
             android:background="@color/red"
             android:text="В игру" />
 
-
+<!--
         <Button
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -69,13 +69,13 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content" />
         </ScrollView>
+        -->
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:background="@drawable/mainpicture"
         android:padding="20dp"
         android:orientation="vertical">
 
@@ -116,8 +116,6 @@
             android:layout_height="match_parent"
             android:layout_margin="5dp">
 
-            <!--android:gravity="center_horizontal">-->
-
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -128,8 +126,6 @@
                 android:layout_alignParentStart="true"
                 android:layout_toLeftOf="@+id/playersView"
                 android:layout_toStartOf="@+id/playersView" />
-            <!--android:layout_gravity="start" -->
-            <!--/>-->
 
             <TextView
                 android:layout_width="wrap_content"
@@ -148,7 +144,6 @@
                 android:id="@+id/opponentIcon"
                 android:layout_toEndOf="@+id/playersView"
                 android:layout_toRightOf="@+id/playersView" />
-            <!--android:layout_gravity="end" />-->
         </RelativeLayout>
     </LinearLayout>
 </ViewFlipper>
