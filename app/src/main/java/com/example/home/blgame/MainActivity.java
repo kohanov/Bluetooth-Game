@@ -35,9 +35,7 @@ import java.util.List;
 
 public class MainActivity extends ListActivity {
     public final static String UUID = "37e562ac-d31a-46f8-b654-2fe4285e7041";
-    public final static String AppName = "Blgame";
-    private final static String IS_SERVER = "isServer";
-    private ViewFlipper viewFlipper;
+    private static ViewFlipper viewFlipper;
     private boolean isStarted = false;
     private boolean isFirst = true;
     private BluetoothAdapter mBluetoothAdapter;
@@ -47,6 +45,7 @@ public class MainActivity extends ListActivity {
     private ProgressDialog progressDialog;
     private TextView textData;
     private EditText textMessage;
+    private static Button gotoGame;
     public static Client client;
     private Server server = null;
 
@@ -85,23 +84,14 @@ public class MainActivity extends ListActivity {
             return new Communicator(socket, new Communicator.CommunicationListener() {
 
                 @Override
-                public void getMessage(final String message) {
+                public void getMessage(final String newMessage) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Log.d("MainActivity", message);
-                            if (client == null && mBluetoothAdapter.checkBluetoothAddress(message)) {
-
-                                try {
-                                    BluetoothDevice temp = mBluetoothAdapter.getRemoteDevice(message);
-                                    client = new Client(temp, communicatorService);
-                                } catch (IllegalArgumentException e) {
-                                    client = null;
-                                    Log.d("MainActivity", e.getLocalizedMessage());
-                                }
-
-                            } else {
-                                //TODO: обрабатывать входящее сообщение здесь
+                            Log.d("MainActivity", newMessage);
+                            //Здесь обрабатывается входящее сообщение
+                            String message = newMessage;
+                            while(message.compareTo("") != 0) {
                                 switch (message.charAt(0)) {
                                     case 'a'://противник готов
                                         if (message.charAt(1) == 's') {
@@ -121,6 +111,7 @@ public class MainActivity extends ListActivity {
                                             }
                                             isFirst = false;
                                         }
+                                        message = message.substring(2,message.length());
                                         break;
                                     case 'b'://устанавливаем начальные значения противника
                                         int i = 1;
@@ -143,6 +134,7 @@ public class MainActivity extends ListActivity {
                                                 ++i;
                                             }
                                         }
+                                        message = message.substring(13,message.length());
                                         break;
                                     case 's'://сделан шаг
                                         switch (message.charAt(1)){
@@ -162,13 +154,13 @@ public class MainActivity extends ListActivity {
                                         int newRow = (int) message.charAt(5) - (int) '0';
                                         desk.redrowReceived(oldColumn, oldRow, newColumn, newRow);
                                         status = Status.MY_TURN;
+                                        message = message.substring(5,message.length());
                                         break;
                                     case 'd'://конец игры
 
                                         break;
                                     case 'e'://сообщение?
-//                                        desk.figures[1][1] = desk.figures[1][2];
-                                        //desk.figures[1][1].figureBackground = Figure.FigureBackground.CHOSEN;
+                                        //
                                         break;
                                 }
                                 desk.invalidate();
@@ -200,6 +192,7 @@ public class MainActivity extends ListActivity {
         textData.setText("Получено: ");
         viewFlipper = (ViewFlipper) findViewById(R.id.flipper);
         textMessage = (EditText) findViewById(R.id.message_text);
+        gotoGame = (Button)findViewById(R.id.gotoGame);
         listAdapter = new ArrayAdapter<BluetoothDevice>(getBaseContext(), android.R.layout.simple_list_item_1, discoveredDevices) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
@@ -277,7 +270,6 @@ public class MainActivity extends ListActivity {
             FinishedReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    findViewById(R.id.finded).setVisibility(View.VISIBLE);
                     findViewById(android.R.id.list).setEnabled(true);
                     if (progressDialog != null)
                         progressDialog.dismiss();
@@ -382,6 +374,8 @@ public class MainActivity extends ListActivity {
         } else {
             new WriteTask().execute("as");
             ((Button) findViewById(R.id.status)).setText("Синий");
+            ((Button) findViewById(R.id.status)).setBackgroundColor(0x900000FF);
+            ((Button) findViewById(R.id.back)).setBackgroundColor(0x900000FF);
             status = Status.OPPONENT_TURN;
         }
         sendReady();
@@ -415,6 +409,12 @@ public class MainActivity extends ListActivity {
             }
         }
         new WriteTask().execute(message.toString());
+    }
+
+    public static void noConnection() {
+        viewFlipper.showPrevious();
+        gotoGame.setVisibility(View.VISIBLE);
+        gotoGame.setText("Ошибка, найдите ещё раз");
     }
 
     private final String TAG = "MainActivity";
