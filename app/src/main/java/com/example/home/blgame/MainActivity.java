@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -31,6 +30,7 @@ import java.util.List;
 
 public class MainActivity extends ListActivity {
     public final static String UUID = "37e562ac-d31a-46f8-b654-2fe4285e7041";
+    private final String TAG = "MainActivity";
     public static ViewFlipper viewFlipper;
     private boolean isStarted = false;
     public boolean isFirst = true;
@@ -39,8 +39,6 @@ public class MainActivity extends ListActivity {
     private ArrayAdapter<BluetoothDevice> listAdapter;
     private BroadcastReceiver Receiver = null, FinishedReceiver = null;
     private ProgressDialog progressDialog;
-    //private TextView textData;
-    //private EditText textMessage;
     private static Button gotoGame;
     public static Client client;
     private Server server = null;
@@ -85,16 +83,16 @@ public class MainActivity extends ListActivity {
                         @Override
                         public void run() {
                             Log.d("MainActivity", newMessage);
-                            //Здесь обрабатывается входящее сообщение
+                            //Parse entering message
                             String message = newMessage;
                             while (message.compareTo("") != 0) {
                                 switch (message.charAt(0)) {
-                                    case 'a'://противник готов
+                                    case 'a'://opponent is ready
                                         if (message.charAt(1) == 's') {
                                             status = Status.MY_TURN;
                                             ((Button) findViewById(R.id.status)).setText("Твой ход");
                                         } else {
-                                            //смена цветов у всех!!!!!
+                                            //change colours to default
                                             MY_COLOR = Figure.Team.BLUE;
                                             OPPONENT_COLOR = Figure.Team.RED;
                                             for (int column = 0; column < desk.countFiguresInRow; column++) {
@@ -110,7 +108,7 @@ public class MainActivity extends ListActivity {
                                         }
                                         message = message.substring(2, message.length());
                                         break;
-                                    case 'b'://устанавливаем начальные значения противника
+                                    case 'b'://set opponent's values
                                         int i = 1;
                                         for (int column = desk.countFiguresInRow - 1; column >= 0; --column) {
                                             for (int row = 1; row >= 0; --row) {
@@ -133,7 +131,7 @@ public class MainActivity extends ListActivity {
                                         }
                                         message = message.substring(1 + desk.countFiguresInRow*2,message.length());
                                         break;
-                                    case 's'://сделан шаг
+                                    case 's'://step done
                                         switch (message.charAt(1)){
                                             case 'w':
                                                 --desk.myFigures;
@@ -164,22 +162,9 @@ public class MainActivity extends ListActivity {
                                         ((Button) findViewById(R.id.status)).setText("Твой ход");
                                         message = message.substring(6,message.length());
                                         break;
-                                    case 'd'://конец игры
-
-                                        break;
-                                    case 'e'://сообщение?
-                                        //
-                                        break;
-                                    case 'l':
-                                        //обнулить доску
-                                        endGame();
-                                        //показать, что выиграл
-                                        break;
-                                    case 'w':
                                 }
                             }
                             desk.invalidate();
-                            //textData.setText(message + "\n" + textData.getText().toString());Z
                         }
                     });
                 }
@@ -201,10 +186,7 @@ public class MainActivity extends ListActivity {
             // Device does not support Bluetooth
             System.exit(1);
         }
-        //textData = (TextView) findViewById(R.id.data_text);
-        //textData.setText("Получено: ");
         viewFlipper = (ViewFlipper) findViewById(R.id.flipper);
-        //textMessage = (EditText) findViewById(R.id.message_text);
         gotoGame = (Button) findViewById(R.id.gotoGame);
         listAdapter = new ArrayAdapter<BluetoothDevice>(getBaseContext(), android.R.layout.simple_list_item_1, discoveredDevices) {
             @Override
@@ -217,20 +199,12 @@ public class MainActivity extends ListActivity {
         };
         setListAdapter(listAdapter);
         checkBluetoothEnabled();
-
         desk = (Desk) findViewById(R.id.desk);
         desk.mainActivity = this;
-//        myIcon = (ImageView) findViewById(R.id.myIcon);
-//        opponentIcon = (ImageView) findViewById(R.id.opponentIcon);
-//        players = (TextView) findViewById(R.id.playersView);
-//        myIcon.setImageResource(R.drawable.red_unknown);
-//        opponentIcon.setImageResource(R.drawable.blue_unknown);
-//        players.setText("Red\n vs\n Blue");
     }
 
     public void checkBluetoothEnabled() {
         if (!mBluetoothAdapter.isEnabled()) {
-            //Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             Toast.makeText(this, "Сначала включи Bluetooth", Toast.LENGTH_LONG).show();
             TextView buttonText = (TextView) findViewById(R.id.BTstatus);
             buttonText.setText(R.string.enableBT);
@@ -270,7 +244,6 @@ public class MainActivity extends ListActivity {
                 }
             }
         };
-
         if (FinishedReceiver == null) {
             FinishedReceiver = new BroadcastReceiver() {
                 @Override
@@ -283,7 +256,6 @@ public class MainActivity extends ListActivity {
                 }
             };
         }
-
         // Register the BroadcastReceiver
         registerReceiver(Receiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
         registerReceiver(FinishedReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
@@ -325,9 +297,9 @@ public class MainActivity extends ListActivity {
     }
 
     public void onListItemClick(ListView parent, View v, int position, long id) {
+        //client chosen
         Log.d(TAG, "onListItemClick");
         unregisterReceiver(Receiver);
-        //client chosen
         if (client != null) {
             client.cancel();
         }
@@ -342,19 +314,9 @@ public class MainActivity extends ListActivity {
         new WriteTask().execute("Hello!");
         viewFlipper.showNext();
     }
-/*
-    public void sendMessage(View view) {
-        Log.d(TAG, "sendMessage");
-        if (client != null) {
-            new WriteTask().execute(textMessage.getText().toString());
-            textMessage.setText("");
-        } else {
-            Toast.makeText(this, "Сначала выберите клиента", Toast.LENGTH_SHORT).show();
-        }
-    }
-*/
+
     public void pauseGame(View view) {
-        //Переход в начальное окно
+        //Go to main window
         viewFlipper.showPrevious();
         discoveredDevices.clear();
         listAdapter.notifyDataSetChanged();
@@ -362,13 +324,14 @@ public class MainActivity extends ListActivity {
     }
 
     public void gotoGame(View view) {
+        //Go to game window
         viewFlipper.showNext();
-        //Переход в игровое окно
     }
 
     public void setReady(View view) {
+        //Send to opponent that user is ready
         Log.d(TAG, "setReady");
-        ((Button) findViewById(R.id.status)).setClickable(false);
+        findViewById(R.id.status).setClickable(false);
         if (isFirst) {
             new WriteTask().execute("ap");
             ((Button) findViewById(R.id.status)).setText("Красный");
@@ -384,13 +347,15 @@ public class MainActivity extends ListActivity {
     }
 
     public static void sendPrepared(String message) {
-        Log.d("SEMD PREPEARED", "sendMessage");
+        //send message from Desk
+        Log.d("MainActivity", "sendMessage");
         if (client != null) {
             new WriteTask().execute(message);
         }
     }
 
     public void sendReady() {
+        //prepare and send info about figure values
         Log.d(TAG, "sendReady");
         StringBuilder message = new StringBuilder("b");
         for (int column = 0; column < desk.countFiguresInRow; column++) {
@@ -412,17 +377,9 @@ public class MainActivity extends ListActivity {
     }
 
     public static void noConnection() {
+        //create an Exception, because client cannot connect to user
         viewFlipper.showPrevious();
         gotoGame.setVisibility(View.VISIBLE);
         gotoGame.setText("Ошибка, найдите ещё раз");
     }
-
-    public void endGame() {
-        MY_COLOR = Figure.Team.RED;
-        OPPONENT_COLOR = Figure.Team.BLUE;
-        status = Status.BEFORE_START;
-        //desk.initDesk();
-    }
-
-    private final String TAG = "MainActivity";
 }
