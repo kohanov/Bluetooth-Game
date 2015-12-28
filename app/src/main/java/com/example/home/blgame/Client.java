@@ -55,6 +55,7 @@ public class Client extends Thread {
             }).start();
         } catch (IOException connectException) {
             Log.d("Client", "Connect timeout!!!!!!11!!1!1");
+            MainActivity.noConnection();
             // Unable to connect; close the socket and get out
             try {
                 mmSocket.close();
