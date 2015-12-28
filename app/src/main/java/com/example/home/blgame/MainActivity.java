@@ -31,9 +31,9 @@ import java.util.List;
 
 public class MainActivity extends ListActivity {
     public final static String UUID = "37e562ac-d31a-46f8-b654-2fe4285e7041";
-    private static ViewFlipper viewFlipper;
+    public static ViewFlipper viewFlipper;
     private boolean isStarted = false;
-    private boolean isFirst = true;
+    public boolean isFirst = true;
     private BluetoothAdapter mBluetoothAdapter;
     private final List<BluetoothDevice> discoveredDevices = new ArrayList<BluetoothDevice>();
     private ArrayAdapter<BluetoothDevice> listAdapter;
@@ -131,7 +131,7 @@ public class MainActivity extends ListActivity {
                                                 ++i;
                                             }
                                         }
-                                        message = message.substring(13,message.length());
+                                        message = message.substring(1 + desk.countFiguresInRow*2,message.length());
                                         break;
                                     case 's'://сделан шаг
                                         switch (message.charAt(1)){
@@ -145,6 +145,16 @@ public class MainActivity extends ListActivity {
                                                 //to empty or draw
                                                 break;
                                         }
+                                        if (desk.myFigures == 0) {
+                                            desk.showLose();
+                                            message = "";
+                                            break;
+                                        }
+                                        if (desk.opponentFigures == 0) {
+                                            desk.showWin();
+                                            message = "";
+                                            break;
+                                        }
                                         int oldColumn = (int) message.charAt(2) - (int) '0';
                                         int oldRow = (int) message.charAt(3) - (int) '0';
                                         int newColumn = (int) message.charAt(4) - (int) '0';
@@ -152,7 +162,7 @@ public class MainActivity extends ListActivity {
                                         desk.redrowReceived(oldColumn, oldRow, newColumn, newRow);
                                         status = Status.MY_TURN;
                                         ((Button) findViewById(R.id.status)).setText("Твой ход");
-                                        message = message.substring(5,message.length());
+                                        message = message.substring(6,message.length());
                                         break;
                                     case 'd'://конец игры
 
@@ -181,7 +191,6 @@ public class MainActivity extends ListActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
-
         MY_COLOR = Figure.Team.RED;
         OPPONENT_COLOR = Figure.Team.BLUE;
         status = Status.BEFORE_START;
@@ -210,12 +219,13 @@ public class MainActivity extends ListActivity {
         checkBluetoothEnabled();
 
         desk = (Desk) findViewById(R.id.desk);
-        myIcon = (ImageView) findViewById(R.id.myIcon);
-        opponentIcon = (ImageView) findViewById(R.id.opponentIcon);
-        players = (TextView) findViewById(R.id.playersView);
-        myIcon.setImageResource(R.drawable.red_unknown);
-        opponentIcon.setImageResource(R.drawable.blue_unknown);
-        players.setText("Red\n vs\n Blue");
+        desk.mainActivity = this;
+//        myIcon = (ImageView) findViewById(R.id.myIcon);
+//        opponentIcon = (ImageView) findViewById(R.id.opponentIcon);
+//        players = (TextView) findViewById(R.id.playersView);
+//        myIcon.setImageResource(R.drawable.red_unknown);
+//        opponentIcon.setImageResource(R.drawable.blue_unknown);
+//        players.setText("Red\n vs\n Blue");
     }
 
     public void checkBluetoothEnabled() {
@@ -237,12 +247,9 @@ public class MainActivity extends ListActivity {
     }
 
     public void discoverDevices(View view) {
-        /*
         if (isStarted) {
-            viewFlipper.showNext();
-            return;
+            desk.initGame();
         }
-        */
         checkBluetoothEnabled();
         discoveredDevices.clear();
         listAdapter.notifyDataSetChanged();

@@ -12,6 +12,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.home.blgame.MainActivity;
 import com.example.home.blgame.R;
@@ -25,7 +27,7 @@ import static com.example.home.blgame.MainActivity.*;
  */
 public class Desk extends View {
 
-    public final int countFiguresInRow = 6;
+    public final int countFiguresInRow = 4;
     private int deskSize;
     private int fieldSize;
 
@@ -62,7 +64,7 @@ public class Desk extends View {
 
 
     public Figure[][] figures;
-
+    public MainActivity mainActivity;
     public int myFigures;
     public int opponentFigures;
 
@@ -100,7 +102,7 @@ public class Desk extends View {
         invalidate();
     }
 
-    private void initDesk() {
+    public void initDesk() {
         Log.d(TAG, "initDesk");
 
         figures = new Figure[countFiguresInRow][countFiguresInRow];
@@ -111,9 +113,9 @@ public class Desk extends View {
         for (int column = 0; column < countFiguresInRow; column++) {
             for (int row = 0; row < countFiguresInRow; row++) {
                 if (row < 2) {
-                    figures[column][row] = new Figure(FigureBackground.NO_ACTIVITY, FigureImage.ROCK, true, OPPONENT_COLOR);//TODO hide OPPONENT
+                    figures[column][row] = new Figure(FigureBackground.NO_ACTIVITY, FigureImage.ROCK, false, OPPONENT_COLOR);
                 } else if (row >= countFiguresInRow - 2) {
-                    figures[column][row] = new Figure(FigureBackground.NO_ACTIVITY, FigureImage.ROCK, true, MY_COLOR);//TODO hide  MY
+                    figures[column][row] = new Figure(FigureBackground.NO_ACTIVITY, FigureImage.ROCK, false, MY_COLOR);
                 } else {
                     figures[column][row] = EMPTY_FIELD;
                 }
@@ -306,11 +308,11 @@ public class Desk extends View {
                                 --opponentFigures;
                                 step.reverse().append("ws").reverse();
                                 MainActivity.sendPrepared(step.toString());
-
+                                ((Button)mainActivity.findViewById(R.id.status)).setText("Ход противника");
                                 if (opponentFigures == 0) {
                                     Log.d(TAG, "you are WINNER!");
-
-                                    //TODO show WIN
+                                    showWin();
+                                    break;
                                 }
                                 status = Status.OPPONENT_TURN;
 
@@ -319,11 +321,11 @@ public class Desk extends View {
                                 --myFigures;
                                 step.reverse().append("ls").reverse();
                                 MainActivity.sendPrepared(step.toString());
-
-                                if (opponentFigures == 0) {
+                                ((Button)mainActivity.findViewById(R.id.status)).setText("Ход противника");
+                                if (myFigures == 0) {
                                     Log.d(TAG, "you are LOSER!");
-
-                                    //TODO show LOSE
+                                    showLose();
+                                    break;
                                 }
                                 status = Status.OPPONENT_TURN;
 
@@ -332,19 +334,19 @@ public class Desk extends View {
                                 step.reverse().append("ds").reverse();
                                 MainActivity.sendPrepared(step.toString());
                                 status = Status.OPPONENT_TURN;
-
+                                ((Button)mainActivity.findViewById(R.id.status)).setText("Ход противника");
                                 break;
                             case EMPTY:
                                 step.reverse().append("es").reverse();
                                 MainActivity.sendPrepared(step.toString());
                                 status = Status.OPPONENT_TURN;
-
+                                ((Button)mainActivity.findViewById(R.id.status)).setText("Ход противника");
                                 break;
                             case CHANGED:
                                 status = Status.MOVE;
                                 break;
                             case BEFORE_FIGHT:
-                                tryChangeFigure(column,row);
+                                tryChangeFigure(column, row);
                                 status = Status.MOVE;
                                 break;
                         }
@@ -564,6 +566,43 @@ public class Desk extends View {
 
         int measuredSize = MeasureSpec.makeMeasureSpec(deskSize, MeasureSpec.EXACTLY);
         super.onMeasure(measuredSize, measuredSize);
+    }
+
+    public void showWin() {
+        Toast.makeText(mainActivity, "Вы выиграли!", Toast.LENGTH_LONG).show();
+        initGame();
+        MainActivity.viewFlipper.showPrevious();
+    }
+
+    public void showLose() {
+        Toast.makeText(mainActivity, "Вы проиграли!", Toast.LENGTH_LONG).show();
+        initGame();
+        MainActivity.viewFlipper.showPrevious();
+    }
+
+    public void initGame() {
+        initDesk();
+        Log.d(TAG, "initGame");
+        if (MY_COLOR == Team.BLUE) {
+            Log.d(TAG, "Blue Team");
+            mainActivity.findViewById(R.id.status).setBackgroundColor(0x90FF0000);
+            mainActivity.findViewById(R.id.back).setBackgroundColor(0x90FF0000);
+            for (int column = 0; column < countFiguresInRow; column++) {
+                for (int row = 0; row < countFiguresInRow; row++) {
+                    if (row < 2) {
+                        figures[column][row].setTeam(MY_COLOR);
+                    } else if (row >= countFiguresInRow - 2) {
+                        figures[column][row].setTeam(OPPONENT_COLOR);
+                    }
+                }
+            }
+        }
+        mainActivity.isFirst = true;
+        ((Button)mainActivity.findViewById(R.id.status)).setText("Подтвердить готовность");
+        mainActivity.findViewById(R.id.status).setClickable(true);
+        MY_COLOR = Team.RED;
+        OPPONENT_COLOR = Team.BLUE;
+        status = Status.BEFORE_START;
     }
 
     private final String TAG = "debug DESK";

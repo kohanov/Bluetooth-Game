@@ -1,34 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ViewFlipper xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/flipper"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    android:orientation="vertical"
-    android:id="@+id/flipper">
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="@drawable/mainpicture">
+        android:background="@drawable/mainpicture"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/gotoGame"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@color/red"
+            android:clickable="false"
+            android:onClick="gotoGame"
+            android:text="В игру"
+            android:visibility="invisible" />
 
         <Button
             android:id="@+id/BTstatus"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:onClick="enableBluetooth"
-            android:background="@color/red"
             android:layout_gravity="center"
+            android:background="@color/red"
+            android:onClick="enableBluetooth"
             android:text="@string/enableBT" />
 
         <Button
             android:id="@+id/search"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:onClick="discoverDevices"
-            android:background="@color/red"
             android:layout_gravity="center"
+            android:background="@color/red"
+            android:onClick="discoverDevices"
             android:text="Поиск соперника" />
 
 
@@ -37,113 +48,58 @@
             android:layout_width="wrap_content"
             android:layout_height="200dp" />
 
-        <Button
-            android:id="@+id/gotoGame"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:visibility="invisible"
-            android:clickable="false"
-            android:onClick="gotoGame"
-            android:layout_gravity="center"
-            android:background="@color/red"
-            android:text="В игру" />
 
-<!--
-        <Button
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:onClick="sendMessage"
-            android:text="Отправить сообщение" />
+        <!--
+                <Button
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="sendMessage"
+                    android:text="Отправить сообщение" />
 
-        <EditText
-            android:id="@+id/message_text"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
+                <EditText
+                    android:id="@+id/message_text"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content" />
 
-        <ScrollView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
+                <ScrollView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/data_text"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content" />
-        </ScrollView>
-        -->
+                    <TextView
+                        android:id="@+id/data_text"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content" />
+                </ScrollView>
+                -->
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:padding="20dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="20dp">
 
         <Button
             android:id="@+id/status"
-            android:text="Не готов"
-            android:onClick="setReady"
-            android:background="@color/red"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:background="@color/red"
+            android:onClick="setReady"
+            android:text="Подтвердить готовность" />
 
         <Button
-            android:text="Назад"
             android:id="@+id/back"
-            android:onClick="pauseGame"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="@color/red" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Status"
-            android:id="@+id/statusView"
-            android:gravity="center_horizontal" />
+            android:background="@color/red"
+            android:onClick="pauseGame"
+            android:text="Назад" />
 
         <com.example.home.blgame.desk.Desk
             android:id="@+id/desk"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#FFFFFF">
-        </com.example.home.blgame.desk.Desk>
-
-        <RelativeLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="5dp">
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:id="@+id/myIcon"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_toLeftOf="@+id/playersView"
-                android:layout_toStartOf="@+id/playersView" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="player1 vs player2"
-                android:id="@+id/playersView"
-                android:layout_gravity="center_horizontal"
-                android:layout_alignParentTop="true"
-                android:layout_centerHorizontal="true" />
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:id="@+id/opponentIcon"
-                android:layout_toEndOf="@+id/playersView"
-                android:layout_toRightOf="@+id/playersView" />
-        </RelativeLayout>
+            android:background="#FFFFFF"></com.example.home.blgame.desk.Desk>
     </LinearLayout>
 </ViewFlipper>
