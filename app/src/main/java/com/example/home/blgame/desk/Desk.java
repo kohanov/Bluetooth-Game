@@ -63,8 +63,11 @@ public class Desk extends View {
 
     public Figure[][] figures;
 
+    public int myFigures;
+    public int opponentFigures;
 
-    enum Fight {WIN, LOSE, DRAW, BEFORE_FIGHT}
+
+    enum Fight {WIN, LOSE, DRAW, BEFORE_FIGHT, CHANGED, EMPTY}
 
     Fight resultOfFight;
 
@@ -92,16 +95,18 @@ public class Desk extends View {
         cfPaperRed = BitmapFactory.decodeResource(src, R.drawable.red_paper_chosen);
         cfPaperBlue = BitmapFactory.decodeResource(src, R.drawable.blue_paper_chosen);
 
-//        fieldSize = Math.min(getWidth(), getHeight())/ countFiguresInRow;
-
         initDesk();
 
+        invalidate();
     }
 
     private void initDesk() {
         Log.d(TAG, "initDesk");
 
         figures = new Figure[countFiguresInRow][countFiguresInRow];
+
+        myFigures = countFiguresInRow * 2;
+        opponentFigures = countFiguresInRow * 2;
 
         for (int column = 0; column < countFiguresInRow; column++) {
             for (int row = 0; row < countFiguresInRow; row++) {
@@ -114,33 +119,38 @@ public class Desk extends View {
                 }
             }
         }
-        invalidate();
     }
+
+
+    private static boolean shouldScale = true;
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         Log.d(TAG, "onDraw");
 
-        fBackground = fBackground.createScaledBitmap(fBackground, fieldSize, fieldSize, false);// false - без сглаживания
-        fUnknownRed = fUnknownRed.createScaledBitmap(fUnknownRed, fieldSize, fieldSize, false);
-        fUnknownBlue = fUnknownBlue.createScaledBitmap(fUnknownBlue, fieldSize, fieldSize, false);
-        fScissorsRed = fScissorsRed.createScaledBitmap(fScissorsRed, fieldSize, fieldSize, false);
-        fScissorsBlue = fScissorsBlue.createScaledBitmap(fScissorsBlue, fieldSize, fieldSize, false);
-        fRockRed = fRockRed.createScaledBitmap(fRockRed, fieldSize, fieldSize, false);
-        fRockBlue = fRockBlue.createScaledBitmap(fRockBlue, fieldSize, fieldSize, false);
-        fPaperRed = fPaperRed.createScaledBitmap(fPaperRed, fieldSize, fieldSize, false);
-        fPaperBlue = fPaperBlue.createScaledBitmap(fPaperBlue, fieldSize, fieldSize, false);
+        if (shouldScale) {
+            shouldScale = false;
+            fBackground = fBackground.createScaledBitmap(fBackground, fieldSize, fieldSize, false);// false - без сглаживания
+            fUnknownRed = fUnknownRed.createScaledBitmap(fUnknownRed, fieldSize, fieldSize, false);
+            fUnknownBlue = fUnknownBlue.createScaledBitmap(fUnknownBlue, fieldSize, fieldSize, false);
+            fScissorsRed = fScissorsRed.createScaledBitmap(fScissorsRed, fieldSize, fieldSize, false);
+            fScissorsBlue = fScissorsBlue.createScaledBitmap(fScissorsBlue, fieldSize, fieldSize, false);
+            fRockRed = fRockRed.createScaledBitmap(fRockRed, fieldSize, fieldSize, false);
+            fRockBlue = fRockBlue.createScaledBitmap(fRockBlue, fieldSize, fieldSize, false);
+            fPaperRed = fPaperRed.createScaledBitmap(fPaperRed, fieldSize, fieldSize, false);
+            fPaperBlue = fPaperBlue.createScaledBitmap(fPaperBlue, fieldSize, fieldSize, false);
 
-        cfBackground = cfBackground.createScaledBitmap(cfBackground, fieldSize, fieldSize, false);
-        cfUnknownRed = cfUnknownRed.createScaledBitmap(cfUnknownRed, fieldSize, fieldSize, false);
-        cfUnknownBlue = cfUnknownBlue.createScaledBitmap(cfUnknownBlue, fieldSize, fieldSize, false);
-        cfScissorsRed = cfScissorsRed.createScaledBitmap(cfScissorsRed, fieldSize, fieldSize, false);
-        cfScissorsBlue = cfScissorsBlue.createScaledBitmap(cfScissorsBlue, fieldSize, fieldSize, false);
-        cfRockRed = cfRockRed.createScaledBitmap(cfRockRed, fieldSize, fieldSize, false);
-        cfRockBlue = cfRockBlue.createScaledBitmap(cfRockBlue, fieldSize, fieldSize, false);
-        cfPaperRed = cfPaperRed.createScaledBitmap(cfPaperRed, fieldSize, fieldSize, false);
-        cfPaperBlue = cfPaperBlue.createScaledBitmap(cfPaperBlue, fieldSize, fieldSize, false);
+            cfBackground = cfBackground.createScaledBitmap(cfBackground, fieldSize, fieldSize, false);
+            cfUnknownRed = cfUnknownRed.createScaledBitmap(cfUnknownRed, fieldSize, fieldSize, false);
+            cfUnknownBlue = cfUnknownBlue.createScaledBitmap(cfUnknownBlue, fieldSize, fieldSize, false);
+            cfScissorsRed = cfScissorsRed.createScaledBitmap(cfScissorsRed, fieldSize, fieldSize, false);
+            cfScissorsBlue = cfScissorsBlue.createScaledBitmap(cfScissorsBlue, fieldSize, fieldSize, false);
+            cfRockRed = cfRockRed.createScaledBitmap(cfRockRed, fieldSize, fieldSize, false);
+            cfRockBlue = cfRockBlue.createScaledBitmap(cfRockBlue, fieldSize, fieldSize, false);
+            cfPaperRed = cfPaperRed.createScaledBitmap(cfPaperRed, fieldSize, fieldSize, false);
+            cfPaperBlue = cfPaperBlue.createScaledBitmap(cfPaperBlue, fieldSize, fieldSize, false);
+        }
 
         for (int column = 0; column < countFiguresInRow; column++) {
             for (int row = 0; row < countFiguresInRow; row++) {
@@ -195,7 +205,7 @@ public class Desk extends View {
                 }
                 break;
             default:
-                Log.d(TAG, "NULL");
+                Log.d(TAG, "NULL selectImage");
                 return null;
         }
         return null;
@@ -238,65 +248,134 @@ public class Desk extends View {
                         Log.d(TAG, "MOVE");
 
                         if ((chosenRow == row) && (chosenColumn == column)) break; // та же клетка
+
                         int oldColumn = chosenColumn;
                         int oldRow = chosenRow;
-                        boolean successed = false;
-                        boolean changeMyFigure = false;
+//                        boolean successed = false;
+//                        boolean changeMyFigure = false;
                         resultOfFight = Fight.BEFORE_FIGHT;
 
                         for (int contactedField = 0; contactedField < 4; contactedField++) {
                             int drow = dRow[contactedField];
                             int dcolumn = dColumn[contactedField];
                             if ((column == chosenColumn + dcolumn) && (row == chosenRow + drow)) {
-                                successed = tryMove(column, row);
+                                if (tryMove(column, row)) {
+                                    break;
+                                }
 
-                                if (successed) {
-                                    break;
-                                }
-                                if (status == Status.MY_TURN) {
-                                    changeMyFigure = true;
-                                    status = Status.MOVE;
-                                    break;
-                                }
+//                                successed = tryMove(column, row);
+//
+//                                if (successed) {
+//                                    break;
+//                                }
+//                                if (status == Status.MY_TURN) {
+//                                    changeMyFigure = true;
+//                                    status = Status.MOVE;
+//                                    break;
+//                                }
                             }
                         }
+//                        Log.d(TAG, "vals: suc: " + successed + " chang: " + changeMyFigure);
 
-                        Log.d(TAG,"vals: suc: " + successed + " chang: " + changeMyFigure);
+//                        if (!changeMyFigure) {
+//                            if (successed) {
+//                                // send msg
+//                                StringBuilder message = new StringBuilder("c");
+//                                message.append(((Integer) (countFiguresInRow - oldColumn - 1)).toString());
+//                                message.append(((Integer) (countFiguresInRow - oldRow - 1)).toString());
+//                                message.append(((Integer) (countFiguresInRow - chosenColumn - 1)).toString());
+//                                message.append(((Integer) (countFiguresInRow - chosenRow - 1)).toString());
+//                                Log.d(TAG, "send message:" + message);
+//                                MainActivity.sendPrepared(message.toString());
+//
+//                                updateCountFiguresOnDesk(resultOfFight);
+//
+//                                status = Status.OPPONENT_TURN;
+//                            } else {
+//                                Log.d(TAG, "failSend");
+//                                tryChangeFigure(column, row);
+//                            }
+//                        } else {
+//                            Log.d(TAG, "notChange " + changeMyFigure);
+//                        }
+                        StringBuilder step = new StringBuilder();
+                        step.append(countFiguresInRow - oldColumn - 1).append(countFiguresInRow - oldRow - 1).append(countFiguresInRow - chosenColumn - 1).append(countFiguresInRow - chosenRow - 1);
 
+                        switch (resultOfFight) {
+                            case WIN:
+                                --opponentFigures;
+                                step.reverse().append("ws").reverse();
+                                MainActivity.sendPrepared(step.toString());
 
-                        if (!changeMyFigure) {
-                            if (successed) {
-                                // send msg
-                                StringBuilder message = new StringBuilder("c");
-                                message.append(((Integer) (countFiguresInRow - oldColumn - 1)).toString());
-                                message.append(((Integer) (countFiguresInRow - oldRow - 1)).toString());
-                                message.append(((Integer) (countFiguresInRow - chosenColumn - 1)).toString());
-                                message.append(((Integer) (countFiguresInRow - chosenRow - 1)).toString());
-                                Log.d(TAG,"send message:"+message);
-                                MainActivity.sendPrepared(message.toString());
+                                if (opponentFigures == 0) {
+                                    Log.d(TAG, "you are WINNER!");
 
+                                    //TODO show WIN
+                                }
                                 status = Status.OPPONENT_TURN;
-                            } else {
-                                Log.d(TAG,"failSend");
-                                tryChangeFigure(column, row);
-                            }
-                        }else {
-                            Log.d(TAG,"notChange "+ changeMyFigure);
+
+                                break;
+                            case LOSE:
+                                --myFigures;
+                                step.reverse().append("ls").reverse();
+                                MainActivity.sendPrepared(step.toString());
+
+                                if (opponentFigures == 0) {
+                                    Log.d(TAG, "you are LOSER!");
+
+                                    //TODO show LOSE
+                                }
+                                status = Status.OPPONENT_TURN;
+
+                                break;
+                            case DRAW:
+                                step.reverse().append("ds").reverse();
+                                MainActivity.sendPrepared(step.toString());
+                                status = Status.OPPONENT_TURN;
+
+                                break;
+                            case EMPTY:
+                                step.reverse().append("es").reverse();
+                                MainActivity.sendPrepared(step.toString());
+                                status = Status.OPPONENT_TURN;
+
+                                break;
+                            case CHANGED:
+                                status = Status.MOVE;
+                                break;
+                            case BEFORE_FIGHT:
+                                tryChangeFigure(column,row);
+                                status = Status.MOVE;
+                                break;
                         }
 
-                        invalidate();
                         break;
                     default:
-                        //OPPONENT_TURN
                         Log.d(TAG, "OPPONENT_TURN. you should wait!");
                         break;
                 }
+                invalidate();
                 break;
         }
         return super.onTouchEvent(event);
     }
 
+//    private void updateCountFiguresOnDesk(Fight resultOfFight) {
+//        switch (resultOfFight) {
+//            case WIN:
+//                --opponentFigures;
+//                break;
+//            case LOSE:
+//                --myFigures;
+//                break;
+//            default://DRAW
+//                break;
+//        }
+//    }
+
     private void tryChangeFigure(int column, int row) {
+        Log.d(TAG, "tryChangeFigure");
+
         if (figures[column][row].getTeam() == MY_COLOR) {
             highlight(chosenColumn, chosenRow, false);
             figures[chosenColumn][chosenRow].setFigureBackground(FigureBackground.NO_ACTIVITY);
@@ -321,6 +400,8 @@ public class Desk extends View {
 
             chosenColumn = column;
             chosenRow = row;
+
+            resultOfFight = Fight.EMPTY;
             return true;
         }
 
@@ -332,9 +413,8 @@ public class Desk extends View {
             highlight(chosenColumn, chosenRow, true);
             figures[chosenColumn][chosenRow].setFigureBackground(FigureBackground.CHOSEN);
 
-            status = Status.MY_TURN;
-
-            return false;
+            resultOfFight = Fight.CHANGED;
+            return true;
         }
 
         if (figures[column][row].getTeam() == OPPONENT_COLOR) {
@@ -386,8 +466,10 @@ public class Desk extends View {
                     case PAPER:
                         return drowDraw(fromColumn, fromRow, toColumn, toRow);
                 }
+            default:
+                Log.d(TAG, "drowShiftFigure");
+                return false;
         }
-        return false;
     }
 
     private boolean drowDraw(int fromColumn, int fromRow, int toColumn, int toRow) {
@@ -434,18 +516,25 @@ public class Desk extends View {
     private void highlight(int column, int row, boolean chosen) {
         Log.d(TAG, "highlight from [" + row + "][" + column + "]");
 
-        for (int contactedField = 0; contactedField < 4; contactedField++) {
-            int drow = dRow[contactedField];
-            int dcolumn = dColumn[contactedField];
-            if (checkBorders(column + dcolumn, row + drow)) {
-                if (figures[column + dcolumn][row + drow].getTeam() == OPPONENT_COLOR
-                        || figures[column + dcolumn][row + drow].getTeam() == Team.EMPTY) {
-                    Log.d(TAG, "highlight: row = " + row + " column = " + column);
-
-                    figures[column + dcolumn][row + drow].setFigureBackground(chosen ? FigureBackground.CHOSEN : FigureBackground.NO_ACTIVITY);
-                }
-            }
+        if (checkBorders(column, row - 1)) {
+            figures[column][row - 1].setFigureBackground(chosen ? FigureBackground.CHOSEN : FigureBackground.NO_ACTIVITY);
         }
+        if (checkBorders(column, row + 1)) {
+            figures[column][row + 1].setFigureBackground(chosen ? FigureBackground.CHOSEN : FigureBackground.NO_ACTIVITY);
+        }
+
+//        for (int contactedField = 0; contactedField < 4; contactedField++) {
+//            int drow = dRow[contactedField];
+//            int dcolumn = dColumn[contactedField];
+//            if (checkBorders(column + dcolumn, row + drow)) {
+//                if (figures[column + dcolumn][row + drow].getTeam() == OPPONENT_COLOR
+//                        || figures[column + dcolumn][row + drow].getTeam() == Team.EMPTY) {
+//                    Log.d(TAG, "highlight: row = " + row + " column = " + column);
+//
+//                    figures[column + dcolumn][row + drow].setFigureBackground(chosen ? FigureBackground.CHOSEN : FigureBackground.NO_ACTIVITY);
+//                }
+//            }
+//        }
     }
 
     private void nextFigure(int column, int row) {

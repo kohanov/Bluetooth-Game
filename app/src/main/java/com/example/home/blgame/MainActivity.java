@@ -100,7 +100,8 @@ public class MainActivity extends ListActivity {
                                     Log.d("MainActivity", e.getLocalizedMessage());
                                 }
 
-                            } else//TODO: обрабатывать входящее сообщение здесь
+                            } else {
+                                //TODO: обрабатывать входящее сообщение здесь
                                 switch (message.charAt(0)) {
                                     case 'a'://противник готов
                                         if (message.charAt(1) == 's') {
@@ -121,58 +122,45 @@ public class MainActivity extends ListActivity {
                                             isFirst = false;
                                         }
                                         break;
-                                    case 'b'://передаём начальные значения
+                                    case 'b'://устанавливаем начальные значения противника
                                         int i = 1;
                                         for (int column = desk.countFiguresInRow - 1; column >= 0; --column) {
                                             for (int row = 1; row >= 0; --row) {
-//                                                int columnchanged = desk.countFiguresInRow - column - 1;
-//                                                int rowchanged = desk.countFiguresInRow - row - 1;
                                                 switch (message.charAt(i)) {
                                                     case '1':
-                                                        Log.d(TAG, message.charAt(i)+ "ROCK");
+                                                        Log.d(TAG, message.charAt(i) + "ROCK");
                                                         desk.figures[column][row].setFigureImage(Figure.FigureImage.ROCK);
                                                         break;
                                                     case '2':
-                                                        Log.d(TAG, message.charAt(i)+ "CUT");
+                                                        Log.d(TAG, message.charAt(i) + "SCISSORS");
                                                         desk.figures[column][row].setFigureImage(Figure.FigureImage.SCISSORS);
                                                         break;
                                                     case '3':
-                                                        Log.d(TAG, message.charAt(i)+ "PAPER");
+                                                        Log.d(TAG, message.charAt(i) + "PAPER");
                                                         desk.figures[column][row].setFigureImage(Figure.FigureImage.PAPER);
                                                         break;
                                                 }
                                                 ++i;
                                             }
                                         }
-//                                        int i = 1;
-//                                        for (int column = 0; column < desk.countFiguresInRow; column++) {
-//                                            for (int row = desk.countFiguresInRow - 2; row < desk.countFiguresInRow; row++) {
-//                                                int columnchanged = desk.countFiguresInRow - column - 1;
-//                                                int rowchanged = desk.countFiguresInRow - row - 1;
-//                                                switch (message.charAt(i)) {
-//                                                    case 1:
-//                                                        desk.figures[columnchanged][rowchanged].setFigureImage(Figure.FigureImage.ROCK);
-//                                                        i++;
-//                                                        break;
-//                                                    case 2:
-//                                                        desk.figures[columnchanged][rowchanged].setFigureImage(Figure.FigureImage.SCISSORS);
-//                                                        i++;
-//                                                        break;
-//                                                    case 3:
-//                                                        desk.figures[columnchanged][rowchanged].setFigureImage(Figure.FigureImage.PAPER);
-//                                                        i++;
-//                                                        break;
-//                                                }
-//                                            }
-//                                        }
                                         break;
-                                    case 'c'://сделан шаг
-                                        int oldColumn = (int) message.charAt(1) - (int) '0';
-                                        int oldRow = (int) message.charAt(2) - (int) '0';
-                                        int newColumn = (int) message.charAt(3) - (int) '0';
-                                        int newRow = (int) message.charAt(4) - (int) '0';
+                                    case 's'://сделан шаг
+                                        switch (message.charAt(1)){
+                                            case 'w':
+                                                --desk.myFigures;
+                                                break;
+                                            case 'l':
+                                                --desk.opponentFigures;
+                                                break;
+                                            default:
+                                                //to empty or draw
+                                                break;
+                                        }
+                                        int oldColumn = (int) message.charAt(2) - (int) '0';
+                                        int oldRow = (int) message.charAt(3) - (int) '0';
+                                        int newColumn = (int) message.charAt(4) - (int) '0';
+                                        int newRow = (int) message.charAt(5) - (int) '0';
                                         desk.redrowReceived(oldColumn, oldRow, newColumn, newRow);
-                                        desk.invalidate();
                                         status = Status.MY_TURN;
                                         break;
                                     case 'd'://конец игры
@@ -183,8 +171,9 @@ public class MainActivity extends ListActivity {
                                         //desk.figures[1][1].figureBackground = Figure.FigureBackground.CHOSEN;
                                         break;
                                 }
-                            desk.invalidate();
-                            textData.setText(message + "\n" + textData.getText().toString());
+                                desk.invalidate();
+                                textData.setText(message + "\n" + textData.getText().toString());
+                            }
                         }
                     });
                 }
