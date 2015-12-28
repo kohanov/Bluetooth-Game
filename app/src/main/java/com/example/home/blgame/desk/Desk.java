@@ -27,7 +27,7 @@ import static com.example.home.blgame.MainActivity.*;
  */
 public class Desk extends View {
 
-    public final int countFiguresInRow = 4;
+    public final int countFiguresInRow = 6;
     private int deskSize;
     private int fieldSize;
 
@@ -253,8 +253,6 @@ public class Desk extends View {
 
                         int oldColumn = chosenColumn;
                         int oldRow = chosenRow;
-//                        boolean successed = false;
-//                        boolean changeMyFigure = false;
                         resultOfFight = Fight.BEFORE_FIGHT;
 
                         for (int contactedField = 0; contactedField < 4; contactedField++) {
@@ -264,42 +262,8 @@ public class Desk extends View {
                                 if (tryMove(column, row)) {
                                     break;
                                 }
-
-//                                successed = tryMove(column, row);
-//
-//                                if (successed) {
-//                                    break;
-//                                }
-//                                if (status == Status.MY_TURN) {
-//                                    changeMyFigure = true;
-//                                    status = Status.MOVE;
-//                                    break;
-//                                }
                             }
                         }
-//                        Log.d(TAG, "vals: suc: " + successed + " chang: " + changeMyFigure);
-
-//                        if (!changeMyFigure) {
-//                            if (successed) {
-//                                // send msg
-//                                StringBuilder message = new StringBuilder("c");
-//                                message.append(((Integer) (countFiguresInRow - oldColumn - 1)).toString());
-//                                message.append(((Integer) (countFiguresInRow - oldRow - 1)).toString());
-//                                message.append(((Integer) (countFiguresInRow - chosenColumn - 1)).toString());
-//                                message.append(((Integer) (countFiguresInRow - chosenRow - 1)).toString());
-//                                Log.d(TAG, "send message:" + message);
-//                                MainActivity.sendPrepared(message.toString());
-//
-//                                updateCountFiguresOnDesk(resultOfFight);
-//
-//                                status = Status.OPPONENT_TURN;
-//                            } else {
-//                                Log.d(TAG, "failSend");
-//                                tryChangeFigure(column, row);
-//                            }
-//                        } else {
-//                            Log.d(TAG, "notChange " + changeMyFigure);
-//                        }
                         StringBuilder step = new StringBuilder();
                         step.append(countFiguresInRow - oldColumn - 1).append(countFiguresInRow - oldRow - 1).append(countFiguresInRow - chosenColumn - 1).append(countFiguresInRow - chosenRow - 1);
 
@@ -585,8 +549,8 @@ public class Desk extends View {
         Log.d(TAG, "initGame");
         if (MY_COLOR == Team.BLUE) {
             Log.d(TAG, "Blue Team");
-            mainActivity.findViewById(R.id.status).setBackgroundColor(0x90FF0000);
-            mainActivity.findViewById(R.id.back).setBackgroundColor(0x90FF0000);
+            mainActivity.findViewById(R.id.status).setBackgroundColor(getResources().getColor(R.color.fullred));
+            mainActivity.findViewById(R.id.back).setBackgroundColor(getResources().getColor(R.color.fullred));
             for (int column = 0; column < countFiguresInRow; column++) {
                 for (int row = 0; row < countFiguresInRow; row++) {
                     if (row < 2) {

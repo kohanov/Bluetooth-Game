@@ -376,8 +376,8 @@ public class MainActivity extends ListActivity {
         } else {
             new WriteTask().execute("as");
             ((Button) findViewById(R.id.status)).setText("Ход противника");
-            findViewById(R.id.status).setBackgroundColor(0x900000FF);
-            findViewById(R.id.back).setBackgroundColor(0x900000FF);
+            findViewById(R.id.status).setBackgroundColor(getResources().getColor(R.color.fullblue));
+            findViewById(R.id.back).setBackgroundColor(getResources().getColor(R.color.fullblue));
             status = Status.OPPONENT_TURN;
         }
         sendReady();
