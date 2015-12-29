@@ -74,6 +74,14 @@
             android:onClick="pauseGame"
             android:text="Назад" />
 
+        <Button
+            android:id="@+id/restartgame"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/fullred"
+            android:onClick="restartGame"
+            android:text="Заново" />
+
         <com.example.home.blgame.desk.Desk
             android:id="@+id/desk"
             android:layout_width="match_parent"

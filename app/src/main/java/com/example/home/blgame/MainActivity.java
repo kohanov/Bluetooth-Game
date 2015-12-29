@@ -162,6 +162,10 @@ public class MainActivity extends ListActivity {
                                         ((Button) findViewById(R.id.status)).setText("Твой ход");
                                         message = message.substring(6,message.length());
                                         break;
+                                    case 'd'://restart game
+                                        desk.showLose();
+                                        message = "";
+                                        break;
                                 }
                             }
                             desk.invalidate();
@@ -341,6 +345,7 @@ public class MainActivity extends ListActivity {
             ((Button) findViewById(R.id.status)).setText("Ход противника");
             findViewById(R.id.status).setBackgroundColor(getResources().getColor(R.color.fullblue));
             findViewById(R.id.back).setBackgroundColor(getResources().getColor(R.color.fullblue));
+            findViewById(R.id.restartgame).setBackgroundColor(getResources().getColor(R.color.fullblue));
             status = Status.OPPONENT_TURN;
         }
         sendReady();
@@ -381,5 +386,10 @@ public class MainActivity extends ListActivity {
         viewFlipper.showPrevious();
         gotoGame.setVisibility(View.VISIBLE);
         gotoGame.setText("Ошибка, найдите ещё раз");
+    }
+    public void restartGame(View view) {
+        new WriteTask().execute("d");
+        desk.showLose();
+        desk.invalidate();
     }
 }

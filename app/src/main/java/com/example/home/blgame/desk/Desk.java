@@ -522,6 +522,7 @@ public class Desk extends View {
             Log.d(TAG, "Blue Team");
             mainActivity.findViewById(R.id.status).setBackgroundColor(getResources().getColor(R.color.fullred));
             mainActivity.findViewById(R.id.back).setBackgroundColor(getResources().getColor(R.color.fullred));
+            mainActivity.findViewById(R.id.restartgame).setBackgroundColor(getResources().getColor(R.color.fullred));
             for (int column = 0; column < countFiguresInRow; column++) {
                 for (int row = 0; row < countFiguresInRow; row++) {
                     if (row < 2) {
